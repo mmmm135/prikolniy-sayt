@@ -97,7 +97,7 @@ export function createWorkEnvironment(motion = true) {
 
     // Articulated geometry, antialiased before the fixed engraving grid.
     // Continuous antialiased edges slide across stationary strokes instead of snapping whole cells.
-    vec2 branchGrid=grid*.65;
+    vec2 branchGrid=grid;
     vec2 branchCell=floor(uvScene*resolution/branchGrid);
     vec2 branchPoint=uvScene;
     vec4 bough=texture2D(branch,branchPoint);

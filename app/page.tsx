@@ -9,6 +9,7 @@ import {createStrokeScene} from './stroke-scene';
 import {createWildlife} from './wildlife';
 import Garden from './Garden';
 import WorkPrelude from './WorkPrelude';
+import {restoreWorkReturn} from './work-return';
 
 export default function Home(){
  const stage=useRef<HTMLElement>(null),canvas=useRef<HTMLCanvasElement>(null),strokes=useRef<HTMLCanvasElement>(null);
@@ -35,6 +36,7 @@ export default function Home(){
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,state={p:0};
 
   const lenis=new Lenis({lerp:.09,smoothWheel:true});
+  const stopRestoring=restoreWorkReturn(top=>lenis.scrollTo(top,{immediate:true,force:true}));
   lenis.on('scroll',ScrollTrigger.update);
   const anim=gsap.to(state,{p:.89,ease:'none',scrollTrigger:{trigger:stage.current,start:'top top',end:'bottom bottom',scrub:true}});
   let raf=0,mx=0,my=0,px=0,py=0;const started=performance.now();
@@ -48,7 +50,7 @@ export default function Home(){
    stage.current?.style.setProperty('--p',String(p));strokeScene.draw(p,t);
   };raf=requestAnimationFrame(draw);
   addEventListener('resize',resize);addEventListener('pointermove',pointer);const lost=(e:Event)=>{e.preventDefault();setFailed(true);};surface.addEventListener('webglcontextlost',lost);
-  return()=>{disposed=true;lenis.destroy();cancelAnimationFrame(raf);anim.scrollTrigger?.kill();anim.kill();wildlife.dispose();removeEventListener('resize',resize);removeEventListener('pointermove',pointer);surface.removeEventListener('webglcontextlost',lost);textures.forEach(tex=>gl.deleteTexture(tex));gl.deleteBuffer(buffer);gl.deleteProgram(program);};
+  return()=>{disposed=true;stopRestoring();lenis.destroy();cancelAnimationFrame(raf);anim.scrollTrigger?.kill();anim.kill();wildlife.dispose();removeEventListener('resize',resize);removeEventListener('pointermove',pointer);surface.removeEventListener('webglcontextlost',lost);textures.forEach(tex=>gl.deleteTexture(tex));gl.deleteBuffer(buffer);gl.deleteProgram(program);};
  },[]);
  return <main>
   <section ref={stage} className="scene-scroll" aria-label="Графический пейзаж POUDEV">

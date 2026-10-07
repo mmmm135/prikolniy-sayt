@@ -1,5 +1,6 @@
 'use client';
 import {useEffect, useRef, type CSSProperties, type PointerEvent} from 'react';
+import {saveWorkReturn} from './work-return';
 
 const projects = [
  {slug:'little-loaf',name:'The Little Loaf',place:'Sorrento, FL',kind:'A sourdough microbakery',tags:'CONTENT · DESIGN · DEVELOPMENT'},
@@ -12,16 +13,16 @@ const projects = [
 export default function WorkGallery() {
  const root = useRef<HTMLDivElement>(null);
  const reducedMotion = useRef(false);
+ const mainIndex = useRef(0);
  useEffect(() => {
   const el = root.current!, stage = el.closest<HTMLElement>('.work-prelude')!;
   const cards = Array.from(el.querySelectorAll<HTMLElement>('.work-card'));
   const frames = cards.map(card => card.querySelector<HTMLIFrameElement>('iframe')!);
-  const buttons = Array.from(el.querySelectorAll<HTMLButtonElement>('.gallery-navigation button'));
   const loaded = new Set<number>(), active = new Set<number>();
   const frameProgress = cards.map(() => -1);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   reducedMotion.current = reduced;
-  let frame = 0, last = 0, progress = 0, visible = false, current = -1;
+  let frame = 0, last = 0, progress = 0, visible = false;
   let width = 1, height = 1, mobile = false;
   const sizes = cards.map(() => ({width: 1, height: 1, preview: 1}));
   const resize = () => {
@@ -56,14 +57,22 @@ export default function WorkGallery() {
    el.style.opacity = String(clamp((progress-.12)*12));
    let closest = 0, distance = Infinity;
    cards.forEach((card, i) => {
-    const x = width*(1.12+i*stride-travel*total), offset = [0,.065,-.035,.08,-.025][i];
-    const diagonal = height*((mobile ? .20 : .15)+(x/width-.25)*(mobile ? .29 : .43)+offset*(mobile ? .45 : 1));
-    // Reserve real caption height and rotation/hover clearance at both viewport edges.
-    const clearance = mobile ? 62 : 72;
-    const y = Math.max(30, Math.min(height-sizes[i].height-clearance, diagonal));
+    const x = width*(1.12+i*stride-travel*total);
+    const delta = (x+sizes[i].width*.5-width*.5)/width;
+    const away = clamp((Math.abs(delta)-.045)/.34);
+    const loosen = away*away*(3-2*away);
+    const scale = 1-loosen*.065;
+    const roll = [-4,5,-3.5,4.5,-5][i]*loosen;
+    const yaw = Math.max(-1,Math.min(1,delta))*-4*loosen;
+    const diagonal = height*((mobile ? .48 : .46)+delta*(mobile ? .25 : .32)+[0,.02,-.015,.025,-.02][i]*loosen);
+    // Place the card centre on a diagonal, reserving its actual rotated footprint.
+    // The previous top-edge clamp flattened every neighbouring card into the same row.
+    const angle = Math.abs(roll)*Math.PI/180;
+    const extent = (sizes[i].height*Math.cos(angle)+sizes[i].width*Math.sin(angle))*scale*.5*1.028+18;
+    const centre = Math.max(extent,Math.min(height-extent,diagonal));
+    const y = centre-sizes[i].height*.5;
     const local = clamp((1.12-x/width)/(mobile ? 1.6 : 1.4));
-    const entrance = clamp(local*6), scale = .97+Math.sin(local*Math.PI)*.03;
-    const yaw = (.5-local)*5, roll = (.5-local)*-1.5;
+    const entrance = clamp(local*6);
     card.style.transform = `translate3d(${x}px,${y}px,0) perspective(1400px) rotateY(${yaw}deg) rotateZ(${roll}deg) scale(${scale})`;
     card.style.setProperty('--card-reveal', String(entrance));
     card.style.setProperty('--image-shift', `${(local-.5)*-20}px`);
@@ -77,13 +86,10 @@ export default function WorkGallery() {
      frameProgress[i] = local;
      frames[i].contentWindow?.postMessage({type:'preview-active',active:playing,progress:local},location.origin);
     }
-    const delta = Math.abs(x+sizes[i].width*.5-width*.5);
-    if (playing && delta<distance) {closest=i; distance=delta;}
+    if (playing && Math.abs(delta)<distance) {closest=i; distance=Math.abs(delta);}
    });
-   if (current !== closest) {
-    current = closest;
-    buttons.forEach((button, i) => button.setAttribute('aria-pressed', String(i===current)));
-   }
+   mainIndex.current=closest;
+   cards.forEach((card,i)=>{card.dataset.primary=String(i===closest);});
   };
   frame = requestAnimationFrame(draw);
   return () => {cancelAnimationFrame(frame); observer.disconnect(); resizer.disconnect();};
@@ -113,9 +119,13 @@ export default function WorkGallery() {
   const top = stage.getBoundingClientRect().top+scrollY+(stage.offsetHeight-innerHeight)*(.34+.66*catalog);
   window.scrollTo({top, behavior: reducedMotion.current ? 'instant' : 'smooth'});
  };
- return <div ref={root} className="work-gallery" lang="en">
+ return <div ref={root} className="work-gallery" lang="en" role="region" aria-label="Selected website concepts" onKeyDown={event=>{
+  if(event.key==='ArrowRight'||event.key==='ArrowLeft'){
+   event.preventDefault();go(Math.max(0,Math.min(projects.length-1,mainIndex.current+(event.key==='ArrowRight'?1:-1))));
+  }
+ }}>
   <div className="gallery-track">{projects.map((project, i) => <article className="work-card" key={project.slug} style={{'--card-index':i} as CSSProperties}>
-   <a className="work-card-surface" href={`/concepts/${project.slug}.html`} aria-label={`Explore ${project.name} website concept`} onPointerMove={point} onPointerLeave={leave}>
+   <a className="work-card-surface" href={`/concepts/${project.slug}.html`} aria-label={`Explore ${project.name} website concept`} onPointerMove={point} onPointerLeave={leave} onClick={()=>saveWorkReturn(project.slug)}>
     <div className="work-preview">
      <div className="work-preview-media"><picture><source media="(max-width:700px)" srcSet={`/concepts/${project.slug}-portrait.jpg`}/><img src={`/concepts/${project.slug}-preview.jpg`} alt={`${project.name} website design preview`}/></picture>
       <iframe title={`${project.name} animated website preview`} tabIndex={-1} aria-hidden="true" onLoad={event => {
@@ -135,11 +145,5 @@ export default function WorkGallery() {
     </div>
    </a>
   </article>)}</div>
-  <nav className="gallery-navigation" aria-label="Choose a website concept">{projects.map((project, i) => <button key={project.slug} type="button" aria-label={`Show ${project.name}`} aria-pressed={i===0} title={project.name} onClick={() => go(i)} onKeyDown={event => {
-   if (event.key==='ArrowRight' || event.key==='ArrowLeft') {
-    event.preventDefault(); const next = (i+(event.key==='ArrowRight' ? 1 : -1)+projects.length)%projects.length;
-    go(next); root.current!.querySelectorAll<HTMLButtonElement>('.gallery-navigation button')[next].focus();
-   }
-  }}>0{i+1}</button>)}</nav>
  </div>;
 }
