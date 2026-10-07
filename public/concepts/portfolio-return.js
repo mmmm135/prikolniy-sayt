@@ -9,7 +9,8 @@ if(!new URLSearchParams(location.search).has('preview')){
  link.className='poudev-return';link.href=valid?point.url:'/?work-return=1#work';
  link.setAttribute('aria-label','Back to POUDEV');
  link.innerHTML='<svg class="poudev-return-arrow" aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M20 12H4m6-6-6 6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="poudev-return-copy"><span class="poudev-return-label">Back to</span><span class="poudev-return-brand">POUDEV</span></span>';
- link.addEventListener('click',()=>{
+ link.addEventListener('click',event=>{
+  if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.defaultPrevented)return;
   if(valid){try{sessionStorage.setItem(pendingKey,JSON.stringify(point));}catch{link.href='/?work-return=1#work';}}
  });
  document.body.append(link);
