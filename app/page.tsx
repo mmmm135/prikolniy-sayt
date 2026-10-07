@@ -64,6 +64,7 @@ export default function Home(){
   <Garden/>
   <WorkPrelude/>
   <Process/>
+  <div className="night-threshold" aria-hidden="true"/>
   <AboutStudio/>
  </main>;
 }

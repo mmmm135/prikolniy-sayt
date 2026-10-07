@@ -34,7 +34,7 @@ export default function Process(){
  const root=useRef<HTMLElement>(null);
  useEffect(()=>{
   const el=root.current!,question=el.querySelector<HTMLElement>('.process-question')!,chapters=Array.from(el.querySelectorAll<HTMLElement>('.process-chapter'));
-  const ending=el.querySelector<HTMLElement>('.process-ending')!,counter=el.querySelector<HTMLElement>('.process-current')!;
+  const ending=el.querySelector<HTMLElement>('.process-ending')!;
   return observeScrollScene(el,(p,reduced)=>{
    el.classList.toggle('natural-chapters',reduced);el.style.setProperty('--process-progress',String(p));
    const arrival=ease(p/.065),departure=ease((p-.10)/.09);
@@ -52,12 +52,11 @@ export default function Process(){
     chapter.setAttribute('aria-hidden',String(!reduced&&show<.01));chapter.inert=!reduced&&show<.01;
    });
    const end=ease((p-.865)/.055);ending.style.setProperty('--ending',String(end));ending.setAttribute('aria-hidden',String(!reduced&&end<.01));
-   counter.textContent=p<.185?'00':p<.405?'01':p<.635?'02':p<.865?'03':'03';
   });
  },[]);
  return <section ref={root} id="process" className="process-section" lang="en" aria-labelledby="process-title">
   <div className="process-stage" data-scroll-stage>
-   <header className="chapter-header"><h2 id="process-title">The process</h2><span><span className="process-current" aria-hidden="true">00</span><span aria-hidden="true"> / 03</span></span></header>
+   <h2 id="process-title" className="sr-only">How we work</h2>
    <div className="process-route" aria-hidden="true"><span/></div>
    <div className="process-question"><div className="question-paper"><span className="folio-eyebrow">You have an idea.</span><p>But where<br/><em>do we start?</em></p><span className="question-foot">Let’s work it out, together.</span></div></div>
    {stages.map((step,i)=><article className={`process-chapter chapter-${i}`} key={step.name} aria-labelledby={`process-step-${i}`}>
