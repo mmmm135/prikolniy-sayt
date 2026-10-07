@@ -11,7 +11,7 @@ export function observeScrollScene(element: HTMLElement, paint: (progress: numbe
   const bounds = element.getBoundingClientRect();
   const stage = element.querySelector<HTMLElement>('[data-scroll-stage]')!;
   const range = Math.max(1, element.offsetHeight - stage.offsetHeight);
-  paint(clamp(-bounds.top / range), motion.matches || getComputedStyle(stage).position !== 'sticky');
+  paint(clamp(-bounds.top / range), motion.matches || innerHeight <= 600);
  };
  const schedule = () => {if (visible && !frame) frame = requestAnimationFrame(draw);};
  const observer = new IntersectionObserver(entries => {

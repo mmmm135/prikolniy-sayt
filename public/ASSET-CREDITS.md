@@ -2,7 +2,7 @@
 
 ## Studio hand engraving
 
-`art/studio-hand.jpg`: original source created once with the built-in imagegen tool for POUDEV. Prompt: "Quiet grayscale photograph of one anatomically correct adult right hand holding a sharpened wooden pencil in a natural drawing grip. Wrist exits the right edge, pencil points lower-left. Landscape 3:2, empty black left third, soft ivory highlights and detailed skin texture. No paper, writing, text, logos, symbols or additional objects." JPEG encoded for the web; rendered in the page as two-colour engraved strokes. A visual metaphor for personal work, not a photograph of a claimed studio employee.
+`art/studio-hand.jpg`: original source created once with the built-in imagegen tool for POUDEV. Prompt: "Quiet grayscale photograph of one anatomically correct adult right hand holding a sharpened wooden pencil in a natural drawing grip. Wrist exits the right edge, pencil points lower-left. Landscape 3:2, empty black left third, soft ivory highlights and detailed skin texture. No paper, writing, text, logos, symbols or additional objects." JPEG encoded for the web; sampled into two-colour engraved strokes. The pencil moves with the scroll and follows the reveal of the POUDEV lettering, then leaves the stage before the direct-conversation sequence. A visual metaphor for personal work, not a photograph of a claimed studio employee.
 
 ## Bird Flight Animation
 Pikawut, CC BY 4.0. Geometry and original animation used; converted to monochrome engraved rendering.
