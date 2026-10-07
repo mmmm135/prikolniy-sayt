@@ -1,5 +1,9 @@
 # External artwork and animated models
 
+## Studio hand engraving
+
+`art/studio-hand.jpg`: original source created once with the built-in imagegen tool for POUDEV. Prompt: "Quiet grayscale photograph of one anatomically correct adult right hand holding a sharpened wooden pencil in a natural drawing grip. Wrist exits the right edge, pencil points lower-left. Landscape 3:2, empty black left third, soft ivory highlights and detailed skin texture. No paper, writing, text, logos, symbols or additional objects." JPEG encoded for the web; rendered in the page as two-colour engraved strokes. A visual metaphor for personal work, not a photograph of a claimed studio employee.
+
 ## Bird Flight Animation
 Pikawut, CC BY 4.0. Geometry and original animation used; converted to monochrome engraved rendering.
 Source: https://sketchfab.com/3d-models/bird-flight-animation-e4b42d0abc1b495abf236c60cd6d729f
