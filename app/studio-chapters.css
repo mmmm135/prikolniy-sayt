@@ -2,7 +2,7 @@
 .work-prelude{height:780svh}
 @media(max-width:700px){.work-prelude{height:790svh}}
 
-.process-section{height:650svh;position:relative;background:var(--paper);color:var(--ink)}
+.process-section{height:1200svh;position:relative;background:var(--paper);color:var(--ink)}
 .process-stage,.studio-stage{height:100svh;position:sticky;top:0;overflow:hidden;isolation:isolate}
 .chapter-header{position:absolute;top:6.5%;left:7%;right:7%;display:flex;justify-content:space-between;align-items:center;font-size:14px;line-height:1.5;z-index:5}
 .chapter-header h2{font-size:inherit;font-weight:400;margin:0}
@@ -67,7 +67,7 @@
 .process-ending h3 em{font-weight:500}.process-ending p{font-size:17px;line-height:1.7;margin:0}
 .ending-rule{display:block;width:80px;height:1px;background:#29292070;margin-top:40px;transform:scaleX(var(--ending,0))}
 
-.about-studio{height:360svh;background:var(--ink);color:var(--paper);--studio-x:0;--studio-y:0}
+.about-studio{height:620svh;background:var(--ink);color:var(--paper);--studio-x:0;--studio-y:0}
 .studio-stage{background:var(--ink)}
 .studio-pen{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
 .studio-wordmark{position:absolute;top:28%;left:6%;right:6%;display:flex;justify-content:center;gap:.005em;font-family:'Unbounded',Arial,sans-serif;font-size:15.2vw;font-weight:400;line-height:1;letter-spacing:-.09em;transform-origin:50% 0;transform:translateY(calc(var(--brand-fold,0)*-20svh)) scale(calc(1 - var(--brand-fold,0)*.77));z-index:3;perspective:1000px}
@@ -109,7 +109,7 @@
  .studio-exchange{left:12%;right:12%;gap:12%}.studio-exchange p{font-size:4.5vw}
 }
 @media(max-width:700px){
- .process-section{height:670svh}.chapter-header{left:8%;right:8%;top:5%;font-size:12px}.folio-eyebrow{font-size:12px}.process-route{left:4%;top:11%;bottom:5%}
+ .process-section{height:1240svh}.chapter-header{left:8%;right:8%;top:5%;font-size:12px}.folio-eyebrow{font-size:12px}.process-route{left:4%;top:11%;bottom:5%}
  .question-paper{width:82%;padding:26px 7%}.question-paper p{font-size:clamp(60px,16vw,92px);margin:26px 0 30px}.question-foot{font-size:14px}
  .process-action{left:9%;right:9%;top:18%;height:36%}
  .process-explanation{left:9%;right:9%;bottom:7%;display:block}.process-name{display:flex;gap:20px;align-items:baseline;margin-bottom:15px}.process-name .folio-eyebrow{margin:0}.process-name h3{font-size:clamp(35px,9.8vw,56px)}
@@ -121,7 +121,7 @@
  .launch-site{width:87%;left:43%;top:46%;padding:16px 17px}.launch-masthead{font-size:10px;padding-bottom:10px}.launch-headline{font-size:40px;margin:18px 0 16px}.launch-body{font-size:12px;gap:10px;display:block}.launch-body>span{display:none}.launch-foot{font-size:9px;margin-top:15px;padding-top:8px;gap:8px}
  .launch-mobile{width:95px;right:-2%;top:29%;padding:13px 10px;font-size:8px}.launch-mobile strong{font-size:24px;margin:19px 0 13px}.launch-mobile p{margin-bottom:19px}.launch-checks{bottom:-17px;gap:19px;font-size:11px}
  .process-ending{padding:12% 8%}.process-ending>.folio-eyebrow{font-size:11px;margin-bottom:30px}.process-ending h3{font-size:clamp(40px,11vw,65px);line-height:1.02;margin-bottom:30px}.process-ending p{font-size:16px;line-height:1.6}.ending-rule{margin-top:30px}
- .about-studio{height:410svh}.about-studio .chapter-header{font-size:11px}.about-studio .chapter-header>span:last-child{max-width:120px;text-align:right}
+ .about-studio{height:720svh}.about-studio .chapter-header{font-size:11px}.about-studio .chapter-header>span:last-child{max-width:120px;text-align:right}
  .studio-wordmark{top:33%;left:5%;right:5%;font-size:15.6vw;transform:translateY(calc(var(--brand-fold,0)*-23svh)) scale(calc(1 - var(--brand-fold,0)*.57))}.studio-letter>span{background:linear-gradient(rgb(201 184 148 / var(--brand-fold,0)),rgb(201 184 148 / var(--brand-fold,0))),repeating-linear-gradient(90deg,var(--paper) 0 1.2px,transparent 1.2px 2.4px);background-clip:text;-webkit-background-clip:text}
  .studio-intro{top:54%}.studio-intro p{font-size:48px}.studio-intro>span{font-size:14px}
  .studio-people{top:28%;left:16%;right:16%;font-size:70px}.direct-line{top:40%;left:23%;right:23%}
