@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 
-// Filmed animals and foliage sampled into one two-colour print grid.
+// Filmed animals and an original botanical plate sampled into one two-colour print grid.
 // Credits for the original artwork and animation: /ASSET-CREDITS.md.
 export function createWorkEnvironment(motion = true) {
  const renderer = new THREE.WebGLRenderer({alpha: true, antialias: false});
@@ -18,7 +18,7 @@ export function createWorkEnvironment(motion = true) {
  let disposed = false, width = 1, height = 1, active = false, prepared = false;
  let lastTime = -1, elapsed = 0;
 
- const videos = ['work-herd-meadow', 'work-canopy'].map(name => {
+ const videos = ['work-herd-meadow'].map(name => {
   const video = document.createElement('video');
   video.src = `/art/${name}.mp4`;
   video.muted = true; video.loop = true; video.playsInline = true;
@@ -30,24 +30,26 @@ export function createWorkEnvironment(motion = true) {
   texture.colorSpace = THREE.NoColorSpace;
   return texture;
  });
- const posters = ['work-herd-poster', 'work-canopy-poster'].map(name => {
+ const posters = ['work-herd-poster'].map(name => {
   const texture = new THREE.TextureLoader().load(`/art/${name}.jpg`);
   texture.colorSpace = THREE.NoColorSpace;
   return texture;
  });
+ const treeTexture = new THREE.TextureLoader().load('/art/work-oak-atlas.png');
+ treeTexture.colorSpace = THREE.NoColorSpace;
  const material = new THREE.ShaderMaterial({
   transparent: true, depthTest: false, depthWrite: false,
   uniforms: {
-   herd: {value: posters[0]}, canopy: {value: posters[1]}, birds: {value: flightTarget.texture},
-   resolution: {value: new THREE.Vector2(1, 1)}, progress: {value: 0}, time: {value: 0},
+   herd: {value: posters[0]}, tree: {value: treeTexture}, birds: {value: flightTarget.texture},
+   resolution: {value: new THREE.Vector2(1, 1)}, progress: {value: 0}, growth: {value: motion ? 0 : 1},
   },
   vertexShader: 'varying vec2 uvScene; void main(){uvScene=uv;gl_Position=vec4(position,1.);}',
   fragmentShader: `
    precision highp float;
    varying vec2 uvScene;
-   uniform sampler2D herd, canopy, birds;
+   uniform sampler2D herd, tree, birds;
    uniform vec2 resolution;
-   uniform float progress, time;
+   uniform float progress, growth;
    float ramp(float a,float b,float x){return smoothstep(a,b,x);}
    float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
    float lightness(vec3 c){return dot(c,vec3(.299,.587,.114));}
@@ -88,19 +90,25 @@ export function createWorkEnvironment(motion = true) {
      alpha=max(alpha,printMark(tone,cell,grid,entrance));
     }
 
-    // A filmed branch drapes from the upper right, leaving an open central reading area.
-    vec2 pivot=vec2(mix(.80,1.02,mobile),mix(.88,.94,mobile));
-    vec2 d=(p-pivot)*vec2(aspect,1.);
-    float angle=-.78+sin(time*.16)*.013;
-    vec2 branch=mat2(cos(angle),-sin(angle),sin(angle),cos(angle))*d;
-    branch=branch/vec2(mix(.87,.72,mobile),mix(.49,.38,mobile))+.5;
-    if(branch.x>0.&&branch.x<1.&&branch.y>0.&&branch.y<1.){
-     vec3 colour=texture2D(canopy,vec2(branch.x*.5,branch.y)).rgb;
-     float matte=texture2D(canopy,vec2(.5+branch.x*.5,branch.y)).r;
-     float detail=matte*(.27+(1.-lightness(colour))*.61);
-     float feather=ramp(0.,.06,branch.x)*ramp(0.,.06,1.-branch.x);
-     float growth=ramp(hash(cell)*.5,hash(cell)*.5+.25,entrance);
-     alpha=max(alpha,printMark(detail*feather,cell,grid,growth));
+    // One stable tree plate. Bark and foliage share exactly the same UVs;
+    // only leaf opacity changes, with no video keying, resampling sway or shimmer.
+    float treeHeight=min(mix(.66,.34,mobile),mix(.46,.74,mobile)*aspect);
+    float treeWidth=treeHeight*.6666667/aspect;
+    vec2 treeGrid=grid*.65;
+    vec2 treeCell=floor(uvScene*resolution/treeGrid);
+    vec2 treePoint=(treeCell+.5)*treeGrid/resolution;
+    vec2 treeUV=(treePoint-vec2(1.-treeWidth-.02,.95-treeHeight))/vec2(treeWidth,treeHeight);
+    if(treeUV.x>0.&&treeUV.x<1.&&treeUV.y>0.&&treeUV.y<1.){
+     vec4 plate=texture2D(tree,vec2(.5+treeUV.x*.5,treeUV.y));
+     // Olive leaves include warm highlights; pure green-only keying leaves them visible too early.
+     float leaf=(1.-ramp(.012,.10,plate.r-plate.g))*ramp(.025,.075,plate.g-plate.b);
+     float grain=.38+(1.-lightness(plate.rgb))*.5;
+     float bark=plate.a*(1.-leaf);
+     vec2 cluster=floor(treeUV*vec2(9.,13.));
+     float delay=treeUV.y*.48+hash(cluster)*.16;
+     float bloom=ramp(delay,delay+.28,growth);
+     float tone=printMark(grain,treeCell,treeGrid,entrance);
+     alpha=max(alpha,tone*(bark+plate.a*leaf*bloom));
     }
 
     vec2 birdGrid=grid*.57;
@@ -168,7 +176,7 @@ export function createWorkEnvironment(motion = true) {
   lastTime = time;
   if (motion) {elapsed += delta; mixers.forEach(mixer => mixer.update(delta));}
   videos.forEach((video, i) => {
-   material.uniforms[i === 0 ? 'herd' : 'canopy'].value = motion && video.readyState >= 2 ? textures[i] : posters[i];
+   material.uniforms.herd.value = motion && video.readyState >= 2 ? textures[i] : posters[i];
   });
   flock.forEach((bird, i) => {
    const u = ((motion ? elapsed : 5)/(23+i*2.7)+i*.197)%1;
@@ -180,7 +188,7 @@ export function createWorkEnvironment(motion = true) {
   });
   renderer.setRenderTarget(flightTarget); renderer.clear(); renderer.render(flightScene, flightCamera);
   renderer.setRenderTarget(null);
-  material.uniforms.time.value = elapsed;
+  material.uniforms.growth.value = motion ? Math.min(1, Math.max(0, (elapsed-1)/13)) : 1;
   material.uniforms.progress.value = progress;
   renderer.render(scene, camera);
  };
@@ -190,7 +198,7 @@ export function createWorkEnvironment(motion = true) {
   mixers.forEach(mixer => mixer.stopAllAction());
   geometryResources.forEach(resource => resource.dispose()); birdMaterial.dispose();
   videos.forEach(video => {video.removeAttribute('src'); video.load();});
-  [...textures, ...posters].forEach(texture => texture.dispose());
+  [...textures, ...posters, treeTexture].forEach(texture => texture.dispose());
   flightTarget.dispose(); geometry.dispose(); material.dispose(); renderer.dispose();
  };
  return {canvas: renderer.domElement, resize, prepare, draw, pause, dispose};
