@@ -20,33 +20,31 @@ async function choose(i) {
 }
 try {
  await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle'});
- const canopyInk = () => page.evaluate(() => {
-  const c=document.querySelector('.work-stage > canvas:not(.cloud-passage)'),ctx=c.getContext('2d');
-  const data=ctx.getImageData(c.width*.76,c.height*.12,c.width*.22,c.height*.17).data;
-  let ink=0;for(let i=0;i<data.length;i+=4)if(data[i]<140)ink++;
-  return ink/(data.length/4);
+ const branchMotion=await page.evaluate(async()=>{
+  const {createWorkBranch}=await import('/app/work-branch.ts');
+  const THREE=await import('/node_modules/three/build/three.module.js');
+  const branch=createWorkBranch(),renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});
+  renderer.setSize(800,600);renderer.setClearColor(0,0);
+  const camera=new THREE.OrthographicCamera(-400,400,300,-300,.1,3000);camera.position.z=1000;
+  const render=p=>{branch.draw(p,800,600);renderer.render(branch.scene,camera);return renderer.domElement.toDataURL();};
+  const start=render(.14),end=render(.72),reverse=render(.14);
+  await new Promise(r=>setTimeout(r,1200));
+  const held=render(.14);
+  const image=new Image();image.src=end;await image.decode();
+  const c=document.createElement('canvas');c.width=800;c.height=600;
+  const ctx=c.getContext('2d');ctx.drawImage(image,0,0);const data=ctx.getImageData(0,0,800,600).data;
+  let ink=0;for(let i=3;i<data.length;i+=4)if(data[i]>100)ink++;
+  branch.dispose();renderer.dispose();
+  return {changesWithScroll:start!==end,reversesExactly:start===reverse,holdsWhenScrollStops:start===held,ink:ink/(800*600)};
  });
- await at(.14); await page.screenshot({path:`${folder}/tree-start.png`});
- const beforeBloom=await canopyInk();
- await page.waitForTimeout(16000); await page.screenshot({path:`${folder}/tree-bloom.png`});
- const afterBloom=await canopyInk();
- console.log('Canopy growth',{beforeBloom,afterBloom});
- assert(afterBloom>beforeBloom*1.2,'Canopy does not visibly bloom');
- results.push({treeGrowth:{beforeBloom,afterBloom}});
- const stability = await page.evaluate(async () => {
-  const canvas=document.querySelector('.work-stage > canvas:not(.cloud-passage)'),ctx=canvas.getContext('2d');
-  const [w,h]=[canvas.width,canvas.height];
-  const region=[Math.floor(w*.73),Math.floor(h*.39),Math.floor(w*.25),Math.floor(h*.28)];
-  const first=ctx.getImageData(...region).data;
-  await new Promise(r=>setTimeout(r,1100));
-  const second=ctx.getImageData(...region).data;
-  let changes=0,ink=0;
-  for(let i=0;i<first.length;i+=4){if(first[i]<100)ink++;if(Math.abs(first[i]-second[i])>10)changes++;}
-  return {changed:changes/(first.length/4),ink:ink/(first.length/4)};
- });
- assert(stability.ink>.003,'Tree not visible');
- assert(stability.changed<.0005,'Settled tree flickers');
- results.push({treeStability:stability});
+ assert(branchMotion.changesWithScroll,'Branch does not animate with scroll');
+ assert(branchMotion.reversesExactly,'Branch does not return to its earlier pose');
+ assert(branchMotion.holdsWhenScrollStops,'Branch moves while scroll is stopped');
+ assert(branchMotion.ink>.008,'Branch not visible');
+ results.push({branchMotion});
+ await at(.14);await page.screenshot({path:`${folder}/branch-folded.png`});
+ await at(.72);await page.screenshot({path:`${folder}/branch-open.png`});
+ console.log('Branch scroll QA',branchMotion);
  for(let i=0;i<5;i++) {
   await choose(i);
   const card=page.locator('.work-card').nth(i),box=await card.boundingBox();
