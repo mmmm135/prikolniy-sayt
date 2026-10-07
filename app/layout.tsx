@@ -4,9 +4,6 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "POUDEV — Независимая веб-студия",
   description: "Дизайн и разработка сайтов. Создаём с нуля, переосмысляем и развиваем существующие проекты.",
-  other: {
-    "codex-preview": "development",
-  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

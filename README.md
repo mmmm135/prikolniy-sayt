@@ -25,13 +25,15 @@ npm run build
 npm audit --omit=dev
 ```
 
-The production build is written to `dist/`. `npm start` previews the Cloudflare Worker build locally; it does not publish the site.
+The production build is written to `.next/`. `npm start` starts the production server on port 3000 (or `PORT`) and listens on all network interfaces. A Dockerfile is also provided for Node.js 24.
 
 ## Inquiry storage
 
-The `/api/inquiries` endpoint currently requires a Cloudflare D1 binding named `DB`. Database migrations are in `drizzle/`. The form returns an error when storage is unavailable.
+The `/api/inquiries` endpoint stores enquiries in PostgreSQL. Set `DATABASE_URL` in the hosting environment. The application creates its inquiry table on the first submission. The database must live outside the application container so updates preserve enquiries.
 
-Before deployment to Timeweb Cloud, adapt the server entry point and inquiry storage to the selected hosting environment. The existing local preview command is not a Timeweb production start command.
+For TLS connections, set `DATABASE_SSL=true` and provide the database certificate authority in `DATABASE_CA` when required. Set `APP_ORIGIN` to the public HTTPS origin to restrict browser submissions to the website. Secrets belong in hosting variables, never in the repository.
+
+In Timeweb App Platform, select Next.js with SSR (or Dockerfile), build with `npm run build`, and start with `npm start`. The container listens on port 3000.
 
 ## Assets
 
