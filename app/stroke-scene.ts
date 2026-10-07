@@ -31,7 +31,7 @@ export function createStrokeScene(canvas:HTMLCanvasElement){
  const sourceImage=new Image();sourceImage.onload=()=>{sourceContext.drawImage(sourceImage,0,0,256,144);pixels=sourceContext.getImageData(0,0,256,144).data;};sourceImage.src='/art/night-valley.png';
  let impactTime:number|null=null;
  const draw=(p:number,t:number)=>{
-  ctx.clearRect(0,0,w,h);const pitch=w>1000?5:3.5,height=Math.min(w*.185,h*.3),hero=Math.min(p/.47,1),intro=1-ease(.08,.26,hero);
+  ctx.clearRect(0,0,w,h);const pitch=w>1000?5:3.5,height=Math.min(w*.185,h*.3),hero=Math.min(p/.47,1);
   ctx.fillStyle='#292920';
   if(p<.13&&w<h){const wash=ctx.createRadialGradient(w*.37,h*.60,10,w*.37,h*.60,w*.48);wash.addColorStop(0,'rgba(201,184,148,1)');wash.addColorStop(.65,'rgba(201,184,148,.96)');wash.addColorStop(1,'rgba(201,184,148,0)');ctx.fillStyle=wash;ctx.fillRect(0,0,w,h);ctx.fillStyle='#292920';}
   if(p<.13){const k=w<h?.64:.42;ctx.globalAlpha=1;for(const b of bars){ctx.fillRect(w*.055+(b.x-w*.06)*k,h*(w<h?.57:.13)+b.a*height*k,pitch*.7*k,(b.b-b.a)*height*k);}}

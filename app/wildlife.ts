@@ -45,7 +45,7 @@ export function createWildlife(options:{towardCenter?:boolean;modelUrl?:string}=
     b.scale.setScalar(Math.min(width,height)/900*size*entry*arrival);
    }});
 
-  foxes.forEach((f,i)=>{f.visible=p>.67;const entry=Math.min(1,Math.max(0,(p-.67)/.1));f.position.set(width*(width<700?-.3:-.35),height*-.285-height*(1-entry)*.12,2);f.scale.setScalar(Math.min(width/1350,height/900)*(1.02));});
+  foxes.forEach(f=>{f.visible=p>.67;const entry=Math.min(1,Math.max(0,(p-.67)/.1));f.position.set(width*(width<700?-.3:-.35),height*-.285-height*(1-entry)*.12,2);f.scale.setScalar(Math.min(width/1350,height/900)*(1.02));});
   renderer.render(scene,camera);
  };
  const dispose=()=>{disposed=true;mixers.forEach(m=>m.stopAllAction());scene.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>m.dispose());}});renderer.dispose();};
