@@ -2,6 +2,7 @@ import {chromium} from 'file:///C:/Users/User/.cache/codex-runtimes/codex-primar
 import {mkdir, writeFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const folder = 'work/refinement-qa';
+const motionOnly=process.argv.includes('--motion-only');
 await mkdir(folder, {recursive:true});
 const browser = await chromium.launch({channel:'chrome',headless:true,args:['--enable-unsafe-swiftshader']});
 const context = await browser.newContext({viewport:{width:1440,height:900},recordVideo:{dir:folder,size:{width:1440,height:900}}});
@@ -26,25 +27,33 @@ try {
   const branch=createWorkBranch(),renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});
   renderer.setSize(800,600);renderer.setClearColor(0,0);
   const camera=new THREE.OrthographicCamera(-400,400,300,-300,.1,3000);camera.position.z=1000;
-  const render=p=>{branch.draw(p,800,600);renderer.render(branch.scene,camera);return renderer.domElement.toDataURL();};
+  const render=(p,time=0,impulse=0)=>{branch.draw(p,800,600,time,impulse);renderer.render(branch.scene,camera);return renderer.domElement.toDataURL();};
   const start=render(.14),end=render(.72),reverse=render(.14);
   await new Promise(r=>setTimeout(r,1200));
   const held=render(.14);
+  const breezeA=render(.72,1),breezeB=render(.72,4),replay=render(.72,1);
+  const responding=render(.72,1,.5);
   const image=new Image();image.src=end;await image.decode();
   const c=document.createElement('canvas');c.width=800;c.height=600;
   const ctx=c.getContext('2d');ctx.drawImage(image,0,0);const data=ctx.getImageData(0,0,800,600).data;
   let ink=0;for(let i=3;i<data.length;i+=4)if(data[i]>100)ink++;
   branch.dispose();renderer.dispose();
-  return {changesWithScroll:start!==end,reversesExactly:start===reverse,holdsWhenScrollStops:start===held,ink:ink/(800*600)};
+  return {changesWithScroll:start!==end,reversesExactly:start===reverse,stableAtSamePhase:start===held,
+   livingBreeze:breezeA!==breezeB,replaysExactly:breezeA===replay,scrollResponse:responding!==breezeA,ink:ink/(800*600)};
  });
  assert(branchMotion.changesWithScroll,'Branch does not animate with scroll');
  assert(branchMotion.reversesExactly,'Branch does not return to its earlier pose');
- assert(branchMotion.holdsWhenScrollStops,'Branch moves while scroll is stopped');
+ assert(branchMotion.stableAtSamePhase,'Branch flickers at the same animation phase');
+ assert(branchMotion.livingBreeze,'No secondary leaf motion');
+ assert(branchMotion.replaysExactly,'Animation is not coherent');
+ assert(branchMotion.scrollResponse,'No response to scrolling impulse');
  assert(branchMotion.ink>.008,'Branch not visible');
  results.push({branchMotion});
  await at(.14);await page.screenshot({path:`${folder}/branch-folded.png`});
  await at(.72);await page.screenshot({path:`${folder}/branch-open.png`});
  console.log('Branch scroll QA',branchMotion);
+ if(motionOnly){const video=page.video();await page.close();await context.close();await video.saveAs(`${folder}/motion.webm`);}
+ if(!motionOnly){
  for(let i=0;i<5;i++) {
   await choose(i);
   const card=page.locator('.work-card').nth(i),box=await card.boundingBox();
@@ -94,15 +103,17 @@ try {
   }
  }
  await mobile.close();
+ }
  const still=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
  await still.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle'});
- await still.evaluate(()=>{const e=document.querySelector('#work');scrollTo(0,e.getBoundingClientRect().top+scrollY+(e.offsetHeight-innerHeight)*(.34+.66*.4));});
+ await still.evaluate(()=>{const e=document.querySelector('#work');scrollTo({top:e.getBoundingClientRect().top+scrollY+(e.offsetHeight-innerHeight)*(.34+.66*.4),behavior:'instant'});});
+ await still.waitForLoadState('networkidle');
  await still.waitForTimeout(1800);
  const first=await still.locator('.work-stage > canvas:not(.cloud-passage)').evaluate(c=>c.toDataURL());
  await still.waitForTimeout(1100);
- assert.equal(first,await still.locator('.work-stage > canvas:not(.cloud-passage)').evaluate(c=>c.toDataURL()),'Reduced-motion scene moves');
+ assert(first===await still.locator('.work-stage > canvas:not(.cloud-passage)').evaluate(c=>c.toDataURL()),'Reduced-motion scene moves');
  await still.close();
  assert.deepEqual(errors,[]);
- await writeFile(`${folder}/results.json`,JSON.stringify({results,hover:true,fullCardClick:true,keyboardNavigation:true,mobile:true,reducedMotion:true,errors},null,2));
+ await writeFile(`${folder}/${motionOnly?'motion-results':'results'}.json`,JSON.stringify({results,hover:!motionOnly,fullCardClick:!motionOnly,keyboardNavigation:!motionOnly,mobile:!motionOnly,reducedMotion:true,errors},null,2));
  console.log('Refinement QA passed',JSON.stringify(results));
 } finally {await browser.close();}

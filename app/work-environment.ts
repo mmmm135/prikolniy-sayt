@@ -21,6 +21,7 @@ export function createWorkEnvironment(motion = true) {
  let disposed = false, width = 1, height = 1, active = false, prepared = false;
  let lastTime = -1, elapsed = 0;
  let branchProgress = -1, branchDirty = true;
+ let branchFollow = -1;
 
  const videos = ['work-herd-meadow'].map(name => {
   const video = document.createElement('video');
@@ -93,10 +94,10 @@ export function createWorkEnvironment(motion = true) {
     }
 
     // Articulated geometry, antialiased before the fixed engraving grid.
-    // The bough enters from beyond the frame; its pose is driven only by scroll.
+    // Continuous antialiased edges slide across stationary strokes instead of snapping whole cells.
     vec2 branchGrid=grid*.65;
     vec2 branchCell=floor(uvScene*resolution/branchGrid);
-    vec2 branchPoint=(branchCell+.5)*branchGrid/resolution;
+    vec2 branchPoint=uvScene;
     vec4 bough=texture2D(branch,branchPoint);
     alpha=max(alpha,printMark(bough.r,branchCell,branchGrid,entrance)*bough.a);
 
@@ -178,9 +179,12 @@ export function createWorkEnvironment(motion = true) {
    bird.scale.setScalar((width<700 ? .68 : 1.4)*(1+i*.085));
   });
   renderer.setRenderTarget(flightTarget); renderer.clear(); renderer.render(flightScene, flightCamera);
-  const pose = motion ? progress : .72;
-  if (branchDirty || branchProgress !== pose) {
-   branch.draw(pose,width,height);
+  if(branchFollow<0)branchFollow=progress;
+  branchFollow+=(progress-branchFollow)*(1-Math.exp(-delta/.18));
+  const pose = motion ? branchFollow : .72;
+  const impulse=motion ? THREE.MathUtils.clamp((progress-branchFollow)*5,-.7,.7) : 0;
+  if (motion || branchDirty || branchProgress !== pose) {
+   branch.draw(pose,width,height,motion ? elapsed : 0,impulse);
    renderer.setRenderTarget(branchTarget);renderer.clear();renderer.render(branch.scene,flightCamera);
    branchProgress = pose; branchDirty = false;
   }

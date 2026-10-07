@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // A continuous, articulated laurel bough: every leaf is attached to a petiole,
-// and every pose is a pure function of scroll position (including reverse scroll).
+// Scroll unfurls the shoot; a slow travelling breeze gives each attached leaf its own response.
 export function createWorkBranch() {
  const scene = new THREE.Scene();
  const root = new THREE.Group(); scene.add(root);
@@ -62,10 +62,11 @@ export function createWorkBranch() {
    const seed=(j*1.618+path*.79)%1, side=j%2===0?-1:1;
    const at=.20+j/(count-1)*.73, length=.28+seed*.10-(at>.8?.04:0);
    const material=new THREE.ShaderMaterial({side:THREE.DoubleSide,
-    uniforms:{fold:{value:1},shade:{value:.12+seed*.14}},
-    vertexShader:`varying vec2 leafUV;varying vec3 leafNormal;uniform float fold;
+    uniforms:{fold:{value:1},flutter:{value:0},shade:{value:.12+seed*.14}},
+    vertexShader:`varying vec2 leafUV;varying vec3 leafNormal;uniform float fold,flutter;
      void main(){leafUV=uv;vec3 p=position;
       p.x*=1.-fold*.84;p.z+=abs(position.x)*fold*1.1+pow(p.y,2.)*fold*.26;
+      p.z+=p.y*p.y*flutter;p.x+=sin(p.y*3.14159)*flutter*.18;
       leafNormal=normalize(normalMatrix*vec3(normal.x,normal.y-fold*.5,normal.z));
       gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);}`,
     fragmentShader:`varying vec2 leafUV;varying vec3 leafNormal;uniform float shade;
@@ -85,37 +86,49 @@ export function createWorkBranch() {
   }
  });
  const smooth=(a:number,b:number,v:number)=>THREE.MathUtils.smoothstep(v,a,b);
- const deform=(p:THREE.Vector3,progress:number)=>{
+ const deform=(p:THREE.Vector3,progress:number,time:number,impulse:number)=>{
   const distance=Math.min(1.6,Math.max(0,-p.y))/1.6;
-  p.x+=distance*distance*(.15*Math.sin(progress*Math.PI*1.7)-.09);
-  p.z+=distance*.12*Math.sin(progress*Math.PI*1.4);
+  const tail=Math.max(0,-p.y-.60);
+  const unfurl=smooth(.03,.74,progress);
+  const angle=-(1-unfurl)*1.55*smooth(0,.90,tail);
+  const x=p.x+.08,y=p.y+.60;
+  p.x=-.08+x*Math.cos(angle)-y*Math.sin(angle);
+  p.y=-.60+x*Math.sin(angle)+y*Math.cos(angle);
+  const breeze=Math.sin(time*.65-distance*2.1)*.028+Math.sin(time*.37+.8)*.012;
+  p.x+=distance*distance*(.14*Math.sin(progress*Math.PI*1.7)+breeze+impulse*.12);
+  p.z+=distance*(.19*Math.sin(progress*Math.PI*1.4)+breeze*.7);
   return p;
  };
- const pose=(progress:number)=>{
+ const pose=(progress:number,time:number,impulse:number)=>{
   tubes.forEach(({geometry,original})=>{
    const position=geometry.getAttribute('position'),p=new THREE.Vector3();
    for(let i=0;i<position.count;i++) {
-    p.fromArray(original,i*3);deform(p,progress);position.setXYZ(i,p.x,p.y,p.z);
+    p.fromArray(original,i*3);deform(p,progress,time,impulse);position.setXYZ(i,p.x,p.y,p.z);
    }
    position.needsUpdate=true;geometry.computeVertexNormals();
   });
   leaves.forEach(leaf=>{
    const {group,path,at,side,seed}=leaf;
-   const openness=smooth(.03+at*.25,.34+at*.34,progress);
-   group.position.copy(deform(paths[path].getPointAt(at),progress));
+   const openness=smooth(.01+at*.16,.34+at*.38,progress);
+   const wave=Math.sin(time*.83-at*3.8+path*.9+seed*.6);
+   const node=paths[path].getPointAt(at);
+   const curl=-(1-smooth(.03,.74,progress))*1.55*smooth(0,.90,Math.max(0,-node.y-.60));
+   group.position.copy(deform(node,progress,time,impulse));
    // Young folded blades turn outward at their own nodes, never as a rigid sprite.
-   group.rotation.set(.25+seed*.7+(1-openness)*.75,
-    side*(.35+progress*.50+seed*.45),
-    side*(.20+openness*(.82+seed*.35))+(path===1?.45:path===2?-.25:0)+Math.sin(progress*5+seed*3)*.065);
-   group.scale.setScalar(.22+openness*.78);
+   group.rotation.set(.25+seed*.7+(1-openness)*1.10+wave*.065+impulse*.14,
+    side*(.15+progress*.95+seed*.45)+wave*.10,
+    side*(.15+openness*(1.10+seed*.35))+(path===1?.45:path===2?-.25:0)+Math.sin(progress*6+seed*3)*.12+wave*.045+curl);
+   group.scale.setScalar(.32+openness*.68);
    leaf.material.uniforms.fold.value=1-openness;
+   leaf.material.uniforms.flutter.value=wave*.045*openness+impulse*.07;
   });
-  root.rotation.z=-.10+progress*.18;
-  root.rotation.y=-.15+progress*.30;
+  root.rotation.z=-.12+progress*.26+Math.sin(time*.53)*.012;
+  root.rotation.y=-.20+progress*.58;
  };
- let previous=-1;
- const draw=(progress:number,width:number,height:number)=>{
-  if(progress!==previous){pose(progress);previous=progress;}
+ let previous='';
+ const draw=(progress:number,width:number,height:number,time=0,impulse=0)=>{
+  const key=`${progress}/${time}/${impulse}`;
+  if(key!==previous){pose(progress,time,impulse);previous=key;}
   const mobile=width<=700,scale=Math.min(height*(mobile?.32:.43),width*(mobile?.63:.30));
   root.scale.setScalar(scale);
   root.position.set(width*.475,height*.50,0);
