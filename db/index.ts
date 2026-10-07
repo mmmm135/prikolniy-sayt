@@ -1,9 +1,11 @@
 import postgres from "postgres";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "./schema";
 
 let client: ReturnType<typeof postgres> | undefined;
 let ready: Promise<void> | undefined;
+let objectStorage: S3Client | undefined;
 
 function getClient() {
   const url = process.env.DATABASE_URL;
@@ -24,6 +26,28 @@ export function getDb() {
 }
 
 export async function saveInquiry(inquiry: { name: string; contact: string; message: string }) {
+  const bucket = process.env.INQUIRIES_BUCKET;
+  if (bucket) {
+    const accessKeyId = process.env.S3_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
+    if (!accessKeyId || !secretAccessKey) throw new Error("Inquiry storage is not configured");
+    objectStorage ??= new S3Client({
+      endpoint: process.env.S3_ENDPOINT || "https://s3.twcstorage.ru",
+      region: process.env.S3_REGION || "ru-1",
+      forcePathStyle: true,
+      credentials: { accessKeyId, secretAccessKey },
+      maxAttempts: 2,
+    });
+    const id = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+    await objectStorage.send(new PutObjectCommand({
+      Bucket: bucket,
+      Key: `inquiries/${createdAt.slice(0, 10)}/${id}.json`,
+      ContentType: "application/json; charset=utf-8",
+      Body: JSON.stringify({ id, ...inquiry, createdAt }),
+    }));
+    return;
+  }
   const sql = getClient();
   ready ??= sql`
     CREATE TABLE IF NOT EXISTS inquiries (

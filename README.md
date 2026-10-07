@@ -29,7 +29,9 @@ The production build is written to `.next/`. `npm start` starts the production s
 
 ## Inquiry storage
 
-The `/api/inquiries` endpoint stores enquiries in PostgreSQL. Set `DATABASE_URL` in the hosting environment. The application creates its inquiry table on the first submission. The database must live outside the application container so updates preserve enquiries.
+The `/api/inquiries` endpoint can store enquiries in a private S3 bucket. Set `INQUIRIES_BUCKET`, `S3_ACCESS_KEY_ID`, and `S3_SECRET_ACCESS_KEY` in the hosting environment. Optional `S3_ENDPOINT` and `S3_REGION` default to Timeweb's standard storage. Each enquiry is saved as a JSON object under `inquiries/YYYY-MM-DD/`. The bucket must remain private. Enquiries can be reviewed in Timeweb's object manager.
+
+Alternatively, set `DATABASE_URL` to use PostgreSQL. The application creates its inquiry table on the first submission. Storage lives outside the application container so updates preserve enquiries.
 
 For TLS connections, set `DATABASE_SSL=true` and provide the database certificate authority in `DATABASE_CA` when required. Set `APP_ORIGIN` to the public HTTPS origin to restrict browser submissions to the website. Secrets belong in hosting variables, never in the repository.
 
