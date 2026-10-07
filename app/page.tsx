@@ -11,6 +11,7 @@ import Garden from './Garden';
 import WorkPrelude from './WorkPrelude';
 import Process from './Process';
 import AboutStudio from './AboutStudio';
+import ContactFinale from './ContactFinale';
 import {restoreWorkReturn} from './work-return';
 
 export default function Home(){
@@ -66,6 +67,7 @@ export default function Home(){
   <Process/>
   <div className="night-threshold" aria-hidden="true"/>
   <AboutStudio/>
+  <ContactFinale/>
  </main>;
 }
 

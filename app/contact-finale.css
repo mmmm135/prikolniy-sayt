@@ -1,0 +1,44 @@
+.contact-finale{position:relative;isolation:isolate;background:#292920;color:#292920;--invitation:0}
+.finale-stage{position:sticky;top:0;height:100svh;margin-bottom:-100svh;overflow:hidden;pointer-events:none;background:#292920}
+.finale-stage canvas{display:block;width:100%;height:100%;opacity:0;transition:opacity 1.4s}
+.finale-ready .finale-stage canvas{opacity:1}
+.finale-scroll-space{height:820svh;pointer-events:none}
+.finale-invitation{position:absolute;inset:19% 6% auto;text-align:center;opacity:var(--invitation);font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(42px,5.5vw,86px);line-height:1.04;letter-spacing:-.025em;text-shadow:0 0 24px #c9b89488}
+.finale-invitation span,.finale-invitation em{display:block}.finale-invitation em{font-weight:500}
+.contact-sheet{position:relative;z-index:2;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:8svh 7% 0 52%;box-sizing:border-box}
+.contact-sheet::before{content:'';position:absolute;inset:-15svh 0 0 38%;background:linear-gradient(90deg,#c9b89400,#c9b894e8 32%,#c9b894);mask-image:linear-gradient(transparent,#000 15svh);z-index:-1;pointer-events:none}
+.contact-eyebrow{font-size:10px!important;letter-spacing:.15em;margin:0 0 23px!important}
+.contact-copy h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(53px,5.1vw,86px);font-weight:500;line-height:.99;letter-spacing:-.035em;margin:0 0 22px}
+.contact-copy h2 em{font-weight:500}.contact-copy>p:last-child{font-size:13px;line-height:1.8;max-width:400px;margin:0 0 38px}
+.contact-form{width:100%;max-width:610px}.contact-pair{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.contact-form label{display:block;font-size:11px;font-weight:500;line-height:1.5}
+.contact-form input,.contact-form textarea{display:block;width:100%;font:400 13px/1.7 'Golos Text',sans-serif;letter-spacing:normal;border:0;border-bottom:1px solid #29292058;color:#292920;background:transparent;padding:12px 0;border-radius:0;outline:none;box-sizing:border-box;transition:border-color .2s}
+.contact-form input::placeholder,.contact-form textarea::placeholder{color:#292920a0;opacity:1}
+.contact-form input:focus,.contact-form textarea:focus{border-color:#292920;box-shadow:0 1px 0 #292920}
+.contact-form>label{margin-top:29px}.contact-form textarea{resize:vertical;min-height:100px;max-height:240px}
+.contact-action{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:24px}
+.contact-action p{font-size:10px;line-height:1.7;margin:0;max-width:140px;color:#292920b8}
+.contact-action button,.contact-success button{border:0;border-bottom:1px solid #292920;background:transparent;color:#292920;font:500 12px/1.5 'Golos Text',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:30px;padding:12px 0;transition:gap .25s}
+.contact-action button:hover,.contact-success button:hover{gap:40px}.contact-action button span,.contact-success button span{font-size:23px;line-height:1}
+.contact-action button:disabled{opacity:.5;cursor:wait}.contact-form [disabled]{opacity:.65}
+.contact-feedback{min-height:24px;font-size:11px;line-height:1.6;padding-top:12px;color:#673a27;outline:none}
+.contact-success{min-height:275px;outline:none}.contact-success>span{font-size:10px;letter-spacing:.1em}.contact-success h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:64px;line-height:1;font-weight:500;margin:23px 0}.contact-success p{font-size:13px;line-height:1.8}.contact-success button{margin-top:24px}
+.contact-footer{position:relative;display:flex;align-items:center;justify-content:space-between;gap:25px;margin:7svh 0 0;padding:24px 0;font-size:9px;color:#292920a8;white-space:nowrap}
+.contact-footer::before{content:'';position:absolute;top:0;right:0;left:calc(-100vw * .45);border-top:1px solid #2929202b}
+.contact-footer a{color:inherit;text-decoration:none}.contact-footer a:hover{color:#292920}.contact-footer a:focus-visible,.contact-action button:focus-visible,.contact-success button:focus-visible{outline:1px solid #292920;outline-offset:5px}
+.contact-footer .footer-brand{font-family:'Unbounded',sans-serif;font-size:13px;letter-spacing:-.07em;color:#292920}.contact-footer>div{display:flex;gap:20px}
+.finale-unavailable .finale-scroll-space{height:100svh}.finale-unavailable .finale-stage{background:linear-gradient(#292920,#c9b894);}.finale-unavailable .contact-sheet{background:#c9b894}
+.finale-natural .finale-scroll-space{height:55svh}.finale-natural .finale-invitation{display:none}
+@media(min-width:1600px){.contact-sheet{padding-top:10svh}.contact-copy>p:last-child{font-size:15px}.contact-form input,.contact-form textarea{font-size:14px}}
+@media(max-width:900px) and (min-width:701px){.contact-sheet{padding-left:45%;padding-right:5%}.contact-copy h2{font-size:56px}.contact-pair{gap:18px}.contact-footer>span{display:none}}
+@media(max-width:700px){
+ .finale-scroll-space{height:860svh}.finale-invitation{inset:19% 8% auto;font-size:48px}
+ .contact-sheet{padding:44svh 7% 0;min-height:125svh;justify-content:flex-start}
+ .contact-sheet::before{inset:28svh 0 0;background:linear-gradient(#c9b89400,#c9b894ed 17svh,#c9b894 50svh)}
+ .contact-copy h2{font-size:clamp(49px,12.8vw,75px)}.contact-eyebrow{margin-bottom:18px!important}.contact-copy>p:last-child{font-size:12px;margin-bottom:30px;max-width:300px}
+ .contact-pair{grid-template-columns:1fr;gap:24px}.contact-form>label{margin-top:24px}.contact-form textarea{min-height:95px}.contact-action{gap:18px}.contact-action p{font-size:9px;max-width:100px}.contact-action button{font-size:11px;gap:20px}
+ .contact-footer{margin-top:45px;font-size:8px;flex-wrap:wrap;gap:17px;padding:21px 0}.contact-footer::before{left:0}.contact-footer .footer-brand{font-size:12px}.contact-footer>div{gap:16px}.contact-footer>span{flex:1;text-align:right}.contact-footer>div{width:100%;justify-content:space-between}
+ .finale-natural .contact-sheet{padding-top:25svh}.finale-natural .contact-sheet::before{inset:10svh 0 0}
+}
+@media(max-height:600px) and (min-width:701px){.contact-sheet{padding-top:50px}.contact-footer{margin-top:40px}.finale-natural .finale-scroll-space{height:60svh}}
+@media(prefers-reduced-motion:reduce){.finale-stage canvas{transition:none}.contact-action button,.contact-success button{transition:none}}
