@@ -1,138 +1,89 @@
 import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
-// A continuous, articulated laurel bough: every leaf is attached to a petiole,
-// Scroll unfurls the shoot; a slow travelling breeze gives each attached leaf its own response.
+// One complete Shrub 04 branch by Rico Cilliers / Poly Haven (CC0).
+// Original leaf silhouettes, bark, UVs and normal maps remain intact.
 export function createWorkBranch() {
- const scene = new THREE.Scene();
- const root = new THREE.Group(); scene.add(root);
- const wood = new THREE.ShaderMaterial({
-  vertexShader:`varying vec3 barkPosition;varying vec3 barkNormal;
-   void main(){barkPosition=position;barkNormal=normalize(normalMatrix*normal);
-    gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-  fragmentShader:`varying vec3 barkPosition;varying vec3 barkNormal;
-   void main(){float light=abs(dot(normalize(barkNormal),normalize(vec3(-.4,.7,1.))));
-    float grain=sin(barkPosition.y*81.+sin(barkPosition.x*129.)*2.)*.045;
-    gl_FragColor=vec4(vec3(.62+light*.18+grain),1.);}`,
- });
- const geometries:THREE.BufferGeometry[] = [], materials:THREE.Material[] = [wood];
- const stemPaths = [
-  [[.04,.13,0],[-.10,-.26,.025],[-.04,-.72,.04],[-.32,-1.13,0],[-.61,-1.50,.04]],
-  [[-.05,-.47,.02],[-.28,-.63,.07],[-.64,-.68,.13],[-.90,-.91,.06]],
-  [[-.18,-.95,.02],[.09,-1.06,-.05],[.21,-1.31,-.04],[.13,-1.52,-.02]],
- ];
- const paths = stemPaths.map(points=>new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p as [number,number,number]))));
- const tubes = paths.map((path,i)=>{
-  const geometry = new THREE.TubeGeometry(path,64,i===0?.026:.010,7,false);
-  geometries.push(geometry);
-  const pos=geometry.getAttribute('position'), original=new Float32Array(pos.array);
-  // Taper the radius to a young twig; TubeGeometry's constant radius is too artificial.
-  for(let ring=0;ring<=64;ring++) {
-   const center=path.getPointAt(ring/64), taper=1-Math.pow(ring/64,.7)*.90;
-   for(let j=0;j<8;j++) {
-    const index=(ring*8+j)*3;
-    original[index]=center.x+(original[index]-center.x)*taper;
-    original[index+1]=center.y+(original[index+1]-center.y)*taper;
-    original[index+2]=center.z+(original[index+2]-center.z)*taper;
-   }
+ const scene = new THREE.Scene(), root = new THREE.Group();
+ scene.add(root, new THREE.HemisphereLight(0xfff8e8,0x595044,2.4));
+ const light = new THREE.DirectionalLight(0xfff6df,3.2);
+ light.position.set(-500,600,900);scene.add(light);
+ const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>();
+ const textures = new Set<THREE.Texture>();
+ const uniforms = {branchProgress:{value:0},branchTime:{value:0},branchImpulse:{value:0}};
+ let disposed = false;
+
+ const deformation = `
+  uniform float branchProgress,branchTime,branchImpulse;
+  attribute vec3 _anchor;
+  attribute vec2 _leaf_info;
+  mat3 turnZ(float a){float c=cos(a),s=sin(a);return mat3(c,s,0.,-s,c,0.,0.,0.,1.);}
+  mat3 turnY(float a){float c=cos(a),s=sin(a);return mat3(c,0.,-s,0.,1.,0.,s,0.,c);}
+  float leafOpen(){return smoothstep(.02+_anchor.y*.08,.36+_anchor.y*.19,branchProgress);}
+  float leafWave(){return sin(branchTime*.87-_anchor.y*2.7+_leaf_info.y*6.28);}
+  mat3 leafTurn(){
+   float fold=(1.-leafOpen())*_leaf_info.x;
+   float wave=leafWave()*_leaf_info.x;
+   return turnY(fold*(.7+_leaf_info.y*.8)+wave*.095+branchImpulse*.14*_leaf_info.x)
+    *turnZ(fold*(_leaf_info.y-.5)*1.15+wave*.038);
   }
-  const mesh=new THREE.Mesh(geometry,wood);root.add(mesh);
-  return {geometry,original};
- });
- const segments=30, across=8, vertices:number[]=[],uvs:number[]=[],indices:number[]=[];
- for(let row=0;row<=segments;row++) {
-  const t=row/segments;
-  const width=Math.pow(Math.sin(Math.PI*t),.82)*.235*(1-.25*t);
-  for(let col=0;col<=across;col++) {
-   const s=col/across*2-1;
-   vertices.push(s*width,t,Math.sin(t*Math.PI)*.035+(1-s*s)*.025);
-   uvs.push(col/across,t);
+  float bendAngle(float y){
+   float reach=clamp(y/1.72,0.,1.);
+   float open=smoothstep(.02,.78,branchProgress);
+   return reach*reach*((1.-open)*.64+sin(branchTime*.61-reach*2.)*.035+branchImpulse*.18);
   }
- }
- for(let row=0;row<segments;row++)for(let col=0;col<across;col++) {
-  const a=row*(across+1)+col,b=a+across+1;
-  indices.push(a,b,a+1,a+1,b,b+1);
- }
- const blade=new THREE.BufferGeometry();blade.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
- blade.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));blade.setIndex(indices);blade.computeVertexNormals();geometries.push(blade);
- const petiole=new THREE.CylinderGeometry(.005,.007,.10,6);petiole.translate(0,.05,0);geometries.push(petiole);
- const leaves:{group:THREE.Group;material:THREE.ShaderMaterial;path:number;at:number;side:number;length:number;seed:number}[]=[];
- paths.forEach((_,path)=>{
-  const count=path===0?9:5;
-  for(let j=0;j<count;j++) {
-   const seed=(j*1.618+path*.79)%1, side=j%2===0?-1:1;
-   const at=.20+j/(count-1)*.73, length=.28+seed*.10-(at>.8?.04:0);
-   const material=new THREE.ShaderMaterial({side:THREE.DoubleSide,
-    uniforms:{fold:{value:1},flutter:{value:0},shade:{value:.12+seed*.14}},
-    vertexShader:`varying vec2 leafUV;varying vec3 leafNormal;uniform float fold,flutter;
-     void main(){leafUV=uv;vec3 p=position;
-      p.x*=1.-fold*.84;p.z+=abs(position.x)*fold*1.1+pow(p.y,2.)*fold*.26;
-      p.z+=p.y*p.y*flutter;p.x+=sin(p.y*3.14159)*flutter*.18;
-      leafNormal=normalize(normalMatrix*vec3(normal.x,normal.y-fold*.5,normal.z));
-      gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);}`,
-    fragmentShader:`varying vec2 leafUV;varying vec3 leafNormal;uniform float shade;
-     void main(){vec2 q=leafUV;float center=abs(q.x-.5);
-      float rib=1.-smoothstep(.005,.018,center);
-      float vein=1.-smoothstep(.025,.065,abs(fract(q.y*11.-center*4.)-.5));
-      vein*=smoothstep(.02,.12,center)*(1.-smoothstep(.40,.49,center));
-      float light=.5+.5*abs(dot(normalize(leafNormal),normalize(vec3(-.4,.7,1.))));
-      float texture=sin(q.y*78.+q.x*22.)*sin(q.x*37.-q.y*14.)*.025;
-      float value=clamp(.19+light*.30+shade+rib*.23+vein*.11+texture,.25,.88);
-      gl_FragColor=vec4(vec3(value),1.);}`,
-   });materials.push(material);
-   const group=new THREE.Group(), mesh=new THREE.Mesh(blade,material);
-   mesh.position.y=.085;mesh.scale.setScalar(length);
-   group.add(new THREE.Mesh(petiole,wood),mesh);root.add(group);
-   leaves.push({group,material,path,at,side,length,seed});
+  vec3 bend(vec3 p){
+   float reach=clamp(p.y/1.72,0.,1.);
+   p=turnZ(bendAngle(p.y))*p;
+   p.z+=reach*reach*(sin(branchProgress*3.2)*.16+sin(branchTime*.43-reach*2.3)*.032);
+   return p;
   }
- });
- const smooth=(a:number,b:number,v:number)=>THREE.MathUtils.smoothstep(v,a,b);
- const deform=(p:THREE.Vector3,progress:number,time:number,impulse:number)=>{
-  const distance=Math.min(1.6,Math.max(0,-p.y))/1.6;
-  const tail=Math.max(0,-p.y-.60);
-  const unfurl=smooth(.03,.74,progress);
-  const angle=-(1-unfurl)*1.55*smooth(0,.90,tail);
-  const x=p.x+.08,y=p.y+.60;
-  p.x=-.08+x*Math.cos(angle)-y*Math.sin(angle);
-  p.y=-.60+x*Math.sin(angle)+y*Math.cos(angle);
-  const breeze=Math.sin(time*.65-distance*2.1)*.028+Math.sin(time*.37+.8)*.012;
-  p.x+=distance*distance*(.14*Math.sin(progress*Math.PI*1.7)+breeze+impulse*.12);
-  p.z+=distance*(.19*Math.sin(progress*Math.PI*1.4)+breeze*.7);
-  return p;
+ `;
+ const release = () => {
+  geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());
+  root.clear();
  };
- const pose=(progress:number,time:number,impulse:number)=>{
-  tubes.forEach(({geometry,original})=>{
-   const position=geometry.getAttribute('position'),p=new THREE.Vector3();
-   for(let i=0;i<position.count;i++) {
-    p.fromArray(original,i*3);deform(p,progress,time,impulse);position.setXYZ(i,p.x,p.y,p.z);
-   }
-   position.needsUpdate=true;geometry.computeVertexNormals();
+ const ready = Promise.all([
+  new GLTFLoader().loadAsync('/models/work-shrub/natural-branch.gltf'),
+  new THREE.TextureLoader().loadAsync('/models/work-shrub/textures/shrub_04_alpha_2k.png'),
+ ]).then(([gltf,alpha])=>{
+  alpha.flipY=false;alpha.colorSpace=THREE.NoColorSpace;textures.add(alpha);
+  gltf.scene.traverse(object=>{
+   if(!(object instanceof THREE.Mesh))return;
+   geometries.add(object.geometry);
+   const source = (Array.isArray(object.material)?object.material:[object.material]) as THREE.MeshStandardMaterial[];
+   source.forEach(material=>{
+    materials.add(material);
+    [material.map,material.normalMap,material.roughnessMap,material.metalnessMap].forEach(t=>{if(t)textures.add(t);});
+    material.alphaMap=alpha;material.alphaTest=.45;material.alphaToCoverage=true;
+    material.side=THREE.DoubleSide;material.metalness=0;material.roughness=.86;
+    material.onBeforeCompile=shader=>{
+     Object.assign(shader.uniforms,uniforms);
+     shader.vertexShader=deformation+shader.vertexShader;
+     shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>',`
+      #include <beginnormal_vertex>
+      objectNormal=turnZ(bendAngle(position.y))*leafTurn()*objectNormal;
+     `).replace('#include <begin_vertex>',`
+      vec3 localLeaf=position-_anchor;
+      localLeaf=leafTurn()*localLeaf*mix(1.,.42+.58*leafOpen(),_leaf_info.x);
+      vec3 transformed=bend(_anchor+localLeaf);
+     `);
+    };
+    material.customProgramCacheKey=()=> 'polyhaven-natural-bough-v1';
+   });
+   // The animated shoot can move beyond the original mesh's static bounds.
+   object.frustumCulled=false;
   });
-  leaves.forEach(leaf=>{
-   const {group,path,at,side,seed}=leaf;
-   const openness=smooth(.01+at*.16,.34+at*.38,progress);
-   const wave=Math.sin(time*.83-at*3.8+path*.9+seed*.6);
-   const node=paths[path].getPointAt(at);
-   const curl=-(1-smooth(.03,.74,progress))*1.55*smooth(0,.90,Math.max(0,-node.y-.60));
-   group.position.copy(deform(node,progress,time,impulse));
-   // Young folded blades turn outward at their own nodes, never as a rigid sprite.
-   group.rotation.set(.25+seed*.7+(1-openness)*1.10+wave*.065+impulse*.14,
-    side*(.15+progress*.95+seed*.45)+wave*.10,
-    side*(.15+openness*(1.10+seed*.35))+(path===1?.45:path===2?-.25:0)+Math.sin(progress*6+seed*3)*.12+wave*.045+curl);
-   group.scale.setScalar(.32+openness*.68);
-   leaf.material.uniforms.fold.value=1-openness;
-   leaf.material.uniforms.flutter.value=wave*.045*openness+impulse*.07;
-  });
-  root.rotation.z=-.12+progress*.26+Math.sin(time*.53)*.012;
-  root.rotation.y=-.20+progress*.58;
- };
- let previous='';
- const draw=(progress:number,width:number,height:number,time=0,impulse=0)=>{
-  const key=`${progress}/${time}/${impulse}`;
-  if(key!==previous){pose(progress,time,impulse);previous=key;}
-  const mobile=width<=700,scale=Math.min(height*(mobile?.32:.43),width*(mobile?.63:.30));
+  if(disposed){release();return;}
+  root.add(gltf.scene);
+ });
+ const draw = (progress:number,width:number,height:number,time=0,impulse=0) => {
+  uniforms.branchProgress.value=progress;uniforms.branchTime.value=time;uniforms.branchImpulse.value=impulse;
+  const mobile=width<=700,scale=Math.min(height*(mobile?.33:.43),width*(mobile?.65:.30));
   root.scale.setScalar(scale);
-  root.position.set(width*.475,height*.50,0);
+  root.position.set(width*(mobile?.515:.455),height*.535,0);
+  root.rotation.set(0,-.18+progress*.32,2.42+progress*.12+Math.sin(time*.47)*.012);
  };
- const dispose=()=>{geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());};
- return {scene,draw,dispose};
+ const dispose = () => {disposed=true;release();};
+ return {scene,ready,draw,dispose};
 }

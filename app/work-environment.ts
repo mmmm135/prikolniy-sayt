@@ -22,6 +22,8 @@ export function createWorkEnvironment(motion = true) {
  let lastTime = -1, elapsed = 0;
  let branchProgress = -1, branchDirty = true;
  let branchFollow = -1;
+ void branch.ready.then(()=>{if(!disposed)branchDirty=true;})
+  .catch(error=>{if(!disposed)console.error('Work scene branch could not load',error);});
 
  const videos = ['work-herd-meadow'].map(name => {
   const video = document.createElement('video');
@@ -99,7 +101,8 @@ export function createWorkEnvironment(motion = true) {
     vec2 branchCell=floor(uvScene*resolution/branchGrid);
     vec2 branchPoint=uvScene;
     vec4 bough=texture2D(branch,branchPoint);
-    alpha=max(alpha,printMark(bough.r,branchCell,branchGrid,entrance)*bough.a);
+    float branchTone=.22+(1.-lightness(bough.rgb))*.58;
+    alpha=max(alpha,printMark(branchTone,branchCell,branchGrid,entrance)*bough.a);
 
     vec2 birdGrid=grid*.57;
     vec2 birdCell=floor(uvScene*resolution/birdGrid);

@@ -25,6 +25,7 @@ try {
   const {createWorkBranch}=await import('/app/work-branch.ts');
   const THREE=await import('/node_modules/three/build/three.module.js');
   const branch=createWorkBranch(),renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});
+  await branch.ready;
   renderer.setSize(800,600);renderer.setClearColor(0,0);
   const camera=new THREE.OrthographicCamera(-400,400,300,-300,.1,3000);camera.position.z=1000;
   const render=(p,time=0,impulse=0)=>{branch.draw(p,800,600,time,impulse);renderer.render(branch.scene,camera);return renderer.domElement.toDataURL();};
