@@ -15,13 +15,18 @@
 .contact-form input,.contact-form textarea{display:block;width:100%;font:400 13px/1.7 'Golos Text',sans-serif;letter-spacing:normal;border:0;border-bottom:1px solid #29292058;color:#292920;background:transparent;padding:12px 0;border-radius:0;outline:none;box-sizing:border-box;transition:border-color .2s}
 .contact-form input::placeholder,.contact-form textarea::placeholder{color:#292920a0;opacity:1}
 .contact-form input:focus,.contact-form textarea:focus{border-color:#292920;box-shadow:0 1px 0 #292920}
-.contact-form>label{margin-top:29px}.contact-form textarea{resize:vertical;min-height:100px;max-height:240px}
+.contact-form>.contact-field{margin-top:29px}.contact-form textarea{resize:none;height:100px;overflow-y:auto;overscroll-behavior:contain;padding-right:12px;scrollbar-width:thin;scrollbar-color:#29292080 transparent}
+.contact-form textarea::-webkit-scrollbar{width:4px}.contact-form textarea::-webkit-scrollbar-track{background:transparent}.contact-form textarea::-webkit-scrollbar-thumb{background:#29292080;border-radius:0}.contact-form textarea::-webkit-scrollbar-thumb:hover{background:#292920}.contact-form textarea::-webkit-scrollbar-button{display:none;width:0;height:0}.contact-form textarea::-webkit-scrollbar-corner{background:transparent}
+@supports selector(::-webkit-scrollbar){.contact-form textarea{scrollbar-width:auto;scrollbar-color:auto}}
+.contact-form [aria-invalid=true]{border-bottom-color:#673a27}.contact-form [aria-invalid=true]:focus{box-shadow:0 1px 0 #673a27}
+.contact-field-note{font-size:10px;line-height:1.6;color:#673a27;margin:8px 0 0;animation:contact-note-in .22s ease-out}
+@keyframes contact-note-in{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
 .contact-action{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:24px}
 .contact-action p{font-size:10px;line-height:1.7;margin:0;max-width:140px;color:#292920b8}
 .contact-action button,.contact-success button{border:0;border-bottom:1px solid #292920;background:transparent;color:#292920;font:500 12px/1.5 'Golos Text',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:30px;padding:12px 0;transition:gap .25s}
 .contact-action button:hover,.contact-success button:hover{gap:40px}.contact-action button span,.contact-success button span{font-size:23px;line-height:1}
 .contact-action button:disabled{opacity:.5;cursor:wait}.contact-form [disabled]{opacity:.65}
-.contact-feedback{min-height:24px;font-size:11px;line-height:1.6;padding-top:12px;color:#673a27;outline:none}
+.contact-feedback{min-height:36px;font-size:11px;line-height:1.6;padding-top:12px;color:#673a27;outline:none}.contact-feedback p{margin:0;padding:11px 14px;border-left:1px solid #673a2780;background:#29292005;animation:contact-note-in .22s ease-out}
 .contact-success{min-height:275px;outline:none}.contact-success>span{font-size:10px;letter-spacing:.1em}.contact-success h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:64px;line-height:1;font-weight:500;margin:23px 0}.contact-success p{font-size:13px;line-height:1.8}.contact-success button{margin-top:24px}
 .contact-footer{position:relative;display:flex;align-items:center;justify-content:space-between;gap:25px;margin:7svh 0 0;padding:24px 0;font-size:9px;color:#292920a8;white-space:nowrap}
 .contact-footer::before{content:'';position:absolute;top:0;right:0;left:calc(-100vw * .45);border-top:1px solid #2929202b}
@@ -36,9 +41,9 @@
  .contact-sheet{padding:44svh 7% 0;min-height:125svh;justify-content:flex-start}
  .contact-sheet::before{inset:28svh 0 0;background:linear-gradient(#c9b89400,#c9b894ed 17svh,#c9b894 50svh)}
  .contact-copy h2{font-size:clamp(49px,12.8vw,75px)}.contact-eyebrow{margin-bottom:18px!important}.contact-copy>p:last-child{font-size:12px;margin-bottom:30px;max-width:300px}
- .contact-pair{grid-template-columns:1fr;gap:24px}.contact-form>label{margin-top:24px}.contact-form textarea{min-height:95px}.contact-action{gap:18px}.contact-action p{font-size:9px;max-width:100px}.contact-action button{font-size:11px;gap:20px}
+ .contact-pair{grid-template-columns:1fr;gap:24px}.contact-form>.contact-field{margin-top:24px}.contact-form textarea{height:95px}.contact-action{gap:18px}.contact-action p{font-size:9px;max-width:100px}.contact-action button{font-size:11px;gap:20px}
  .contact-footer{margin-top:45px;font-size:8px;flex-wrap:wrap;gap:17px;padding:21px 0}.contact-footer::before{left:0}.contact-footer .footer-brand{font-size:12px}.contact-footer>div{gap:16px}.contact-footer>span{flex:1;text-align:right}.contact-footer>div{width:100%;justify-content:space-between}
  .finale-natural .contact-sheet{padding-top:25svh}.finale-natural .contact-sheet::before{inset:10svh 0 0}
 }
 @media(max-height:600px) and (min-width:701px){.contact-sheet{padding-top:50px}.contact-footer{margin-top:40px}.finale-natural .finale-scroll-space{height:60svh}}
-@media(prefers-reduced-motion:reduce){.finale-stage canvas{transition:none}.contact-action button,.contact-success button{transition:none}}
+@media(prefers-reduced-motion:reduce){.finale-stage canvas{transition:none}.contact-action button,.contact-success button{transition:none}.contact-field-note,.contact-feedback p{animation:none}}

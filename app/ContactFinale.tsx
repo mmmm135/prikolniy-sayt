@@ -3,9 +3,19 @@ import {useEffect,useRef,useState,type FormEvent} from 'react';
 import {observeScrollScene,ease} from './scroll-scene';
 import './contact-finale.css';
 
+type EnquiryField='name'|'contact'|'message';
+type FieldErrors=Partial<Record<EnquiryField,string>>;
+const fields:EnquiryField[]=['name','contact','message'];
+function fieldError(field:EnquiryField,input:HTMLInputElement|HTMLTextAreaElement){
+ if(!input.value.trim())return {name:'Please tell us your name.',contact:'Please leave your email address.',message:'Tell us a little about your project.'}[field];
+ if(field==='contact'&&input.validity.typeMismatch)return 'Please enter a valid email address.';
+ return undefined;
+}
+
 export default function ContactFinale(){
  const section=useRef<HTMLElement>(null),canvas=useRef<HTMLCanvasElement>(null),status=useRef<HTMLDivElement>(null);
  const [sending,setSending]=useState(false),[sent,setSent]=useState(false),[error,setError]=useState('');
+ const [fieldErrors,setFieldErrors]=useState<FieldErrors>({});
  useEffect(()=>{
   const element=section.current!,surface=canvas.current!;
   let disposed=false,visible=false,frame=0,progress=0,reduced=false;
@@ -45,9 +55,12 @@ export default function ContactFinale(){
  const submit=async(event:FormEvent<HTMLFormElement>)=>{
   event.preventDefault();if(sending)return;
   const form=event.currentTarget,data=new FormData(form);
-  if(!form.reportValidity())return;
+  const errors:FieldErrors={};
+  for(const field of fields){const input=form.elements.namedItem(field) as HTMLInputElement|HTMLTextAreaElement;const message=fieldError(field,input);if(message)errors[field]=message;}
+  setFieldErrors(errors);setError('');
+  const invalid=fields.find(field=>errors[field]);
+  if(invalid){requestAnimationFrame(()=>(form.elements.namedItem(invalid) as HTMLInputElement|HTMLTextAreaElement).focus());return;}
   const enquiry={name:String(data.get('name')||'').trim(),contact:String(data.get('contact')||'').trim(),message:String(data.get('message')||'').trim()};
-  if(!enquiry.name||!enquiry.message){setError('Please add your name and a few words about your project.');requestAnimationFrame(()=>status.current?.focus());return;}
   setSending(true);setError('');
   try{
    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);
@@ -68,12 +81,18 @@ export default function ContactFinale(){
   <div className="finale-scroll-space" aria-hidden="true"/>
   <div className="contact-sheet">
    <div className="contact-copy"><p className="contact-eyebrow">Your next chapter</p><h2 id="contact-title">Let’s make<br/><em>something good.</em></h2><p>Tell us about your business,<br className="contact-desktop-break"/> your idea, or the thing you’d like to change.</p></div>
-   {sent?<div className="contact-success" ref={status} tabIndex={-1} role="status"><span>Enquiry received</span><h3>A good<br/><em>beginning.</em></h3><p>Thank you for sharing your idea.<br/>We’ll be in touch using the email you left.</p><button type="button" onClick={()=>setSent(false)}>Send another enquiry <span aria-hidden="true">↗</span></button></div>:
-   <form className="contact-form" onSubmit={submit} aria-label="Project enquiry" aria-busy={sending}>
-    <div className="contact-pair"><label>Your name<input autoComplete="name" name="name" required maxLength={120} placeholder="How should we address you?" disabled={sending}/></label><label>Email address<input type="email" autoComplete="email" name="contact" required maxLength={240} placeholder="Where can we reach you?" disabled={sending}/></label></div>
-    <label>A little about your project<textarea name="message" required maxLength={5000} rows={3} placeholder="What do you have in mind?" disabled={sending}/></label>
+   {sent?<div className="contact-success" ref={status} tabIndex={-1} role="status"><span>Enquiry received</span><h3>A good<br/><em>beginning.</em></h3><p>Thank you for sharing your idea.<br/>We’ll be in touch using the email you left.</p><button type="button" onClick={()=>{setSent(false);setError('');setFieldErrors({});}}>Send another enquiry <span aria-hidden="true">↗</span></button></div>:
+   <form className="contact-form" noValidate onSubmit={submit} onInput={event=>{
+    const input=event.target;if(!(input instanceof HTMLInputElement||input instanceof HTMLTextAreaElement))return;
+    const field=input.name as EnquiryField;if(field in fieldErrors)setFieldErrors(previous=>({...previous,[field]:fieldError(field,input)}));
+   }} aria-label="Project enquiry" aria-busy={sending}>
+    <div className="contact-pair">
+     <div className="contact-field"><label htmlFor="contact-name">Your name</label><input id="contact-name" autoComplete="name" name="name" required maxLength={120} placeholder="How should we address you?" disabled={sending} aria-invalid={!!fieldErrors.name} aria-describedby={fieldErrors.name?'contact-name-note':undefined}/>{fieldErrors.name&&<p id="contact-name-note" className="contact-field-note">{fieldErrors.name}</p>}</div>
+     <div className="contact-field"><label htmlFor="contact-email">Email address</label><input id="contact-email" type="email" autoComplete="email" name="contact" required maxLength={240} placeholder="Where can we reach you?" disabled={sending} aria-invalid={!!fieldErrors.contact} aria-describedby={fieldErrors.contact?'contact-email-note':undefined}/>{fieldErrors.contact&&<p id="contact-email-note" className="contact-field-note">{fieldErrors.contact}</p>}</div>
+    </div>
+    <div className="contact-field"><label htmlFor="contact-message">A little about your project</label><textarea id="contact-message" name="message" required maxLength={5000} rows={3} placeholder="What do you have in mind?" disabled={sending} data-lenis-prevent aria-invalid={!!fieldErrors.message} aria-describedby={fieldErrors.message?'contact-message-note':undefined}/>{fieldErrors.message&&<p id="contact-message-note" className="contact-field-note">{fieldErrors.message}</p>}</div>
     <div className="contact-action"><p>Just a conversation to start.</p><button type="submit" disabled={sending}>{sending?'Sending…':'Start a conversation'}<span aria-hidden="true">↗</span></button></div>
-    <div ref={status} className="contact-feedback" role="alert" tabIndex={-1}>{error}</div>
+    <div ref={status} className="contact-feedback" role="alert" tabIndex={-1}>{error&&<p>{error}</p>}</div>
    </form>}
    <footer className="contact-footer"><a href="#" aria-label="POUDEV — back to top" className="footer-brand">POUDEV</a><span>Independent web studio</span><div><a href="/ASSET-CREDITS.md" target="_blank" rel="noreferrer">Artwork credits</a><span>© {new Date().getFullYear()}</span></div></footer>
   </div>

@@ -95,14 +95,15 @@ export function createWorkEnvironment(motion = true) {
      alpha=max(alpha,printMark(tone,cell,grid,entrance));
     }
 
-    // Articulated geometry, antialiased before the fixed engraving grid.
-    // Continuous antialiased edges slide across stationary strokes instead of snapping whole cells.
-    vec2 branchGrid=grid;
+    // Reconstruct the bough from sampled print cells, including its outline.
+    // No continuous source silhouette clips the marks at leaf or twig edges.
+    vec2 branchGrid=vec2(mix(4.6,3.2,mobile),mix(10.,8.,mobile));
     vec2 branchCell=floor(uvScene*resolution/branchGrid);
-    vec2 branchPoint=uvScene;
+    vec2 branchPoint=(branchCell+.5)*branchGrid/resolution;
     vec4 bough=texture2D(branch,branchPoint);
-    float branchTone=.22+(1.-lightness(bough.rgb))*.58;
-    alpha=max(alpha,printMark(branchTone,branchCell,branchGrid,entrance)*bough.a);
+    float coverage=smoothstep(.25,.75,bough.a);
+    float branchTone=.20+pow(clamp(1.-lightness(bough.rgb),0.,1.),1.5)*.68;
+    alpha=max(alpha,printMark(branchTone,branchCell,branchGrid,entrance)*coverage);
 
     vec2 birdGrid=grid*.57;
     vec2 birdCell=floor(uvScene*resolution/birdGrid);
