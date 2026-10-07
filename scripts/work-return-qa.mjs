@@ -1,5 +1,6 @@
 import {chromium} from 'file:///C:/Users/User/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
 import assert from 'node:assert/strict';
+import {galleryCardProgress} from '../app/work-gallery-motion.ts';
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-unsafe-swiftshader']});
 const results=[],errors=[];
 try{
@@ -8,11 +9,12 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:5173/#work',{waitUntil:'networkidle'});
   async function select(index){
-   await page.evaluate(index=>{
-    const e=document.querySelector('#work'),mobile=innerWidth<=700,ratio=document.querySelector('.work-card').offsetWidth/innerWidth;
-    const catalog=.16+.84*(1.12+index*(mobile?1.02:.52)-(1-ratio)*.5)/(mobile?5.11:2.87);
+   const cardWidth=await page.locator('.work-card').first().evaluate(e=>e.offsetWidth);
+   const catalog=galleryCardProgress(width,cardWidth,index);
+   await page.evaluate(catalog=>{
+    const e=document.querySelector('#work');
     scrollTo({top:e.getBoundingClientRect().top+scrollY+(e.offsetHeight-innerHeight)*(.34+.66*catalog),behavior:'instant'});
-   },index);await page.waitForTimeout(1300);
+   },catalog);await page.waitForTimeout(1300);
   }
   async function open(index){
    const before=await page.evaluate(()=>scrollY),box=await page.locator('.work-card-surface').nth(index).boundingBox();

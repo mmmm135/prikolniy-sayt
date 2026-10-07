@@ -1,3 +1,5 @@
+import {galleryCardProgress} from './work-gallery-motion';
+
 type WorkReturn = {slug:string;url:string;scroll:number;sectionTop:number;progress:number;width:number;height:number};
 const savedKey='poudev:work-return',pendingKey='poudev:work-return-pending';
 
@@ -29,8 +31,8 @@ export function restoreWorkReturn(scroll:(top:number)=>void) {
  if(point&&Number.isFinite(point.scroll)&&Number.isFinite(point.progress)){
   scroll(point.width===innerWidth&&point.height===innerHeight?point.scroll+top-point.sectionTop:top+range*point.progress);
  }else if(fallback){
-  const mobile=innerWidth<=700,ratio=section.querySelector<HTMLElement>('.work-card')!.offsetWidth/innerWidth;
-  const catalog=.16+.84*(1.12-(1-ratio)*.5)/(mobile?5.11:2.87);
+  const cardWidth=section.querySelector<HTMLElement>('.work-card')!.offsetWidth;
+  const catalog=galleryCardProgress(innerWidth,cardWidth,0);
   scroll(top+range*(.34+.66*catalog));
  }
 }

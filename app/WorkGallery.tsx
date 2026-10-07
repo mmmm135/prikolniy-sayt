@@ -1,6 +1,7 @@
 'use client';
 import {useEffect, useRef, type CSSProperties, type PointerEvent} from 'react';
 import {saveWorkReturn} from './work-return';
+import {galleryGeometry, galleryCardProgress} from './work-gallery-motion';
 
 const projects = [
  {slug:'little-loaf',name:'The Little Loaf',place:'Sorrento, FL',kind:'A sourdough microbakery',tags:'CONTENT · DESIGN · DEVELOPMENT'},
@@ -53,11 +54,12 @@ export default function WorkGallery() {
    if (!visible || document.hidden) return;
    const target = Number(stage.style.getPropertyValue('--catalog-progress')) || 0;
    progress = reduced ? target : progress+(target-progress)*(1-Math.exp(-dt/.12));
-   const travel = clamp((progress-.16)/.84), stride = mobile ? 1.02 : .52, total = mobile ? 5.11 : 2.87;
+   const {stride, start, total, entrance: travelStart, duration} = galleryGeometry(width, sizes[0].width, cards.length);
+   const travel = clamp((progress-travelStart)/duration);
    el.style.opacity = String(clamp((progress-.12)*12));
    let closest = 0, distance = Infinity;
    cards.forEach((card, i) => {
-    const x = width*(1.12+i*stride-travel*total);
+    const x = width*(start+i*stride-travel*total);
     const delta = (x+sizes[i].width*.5-width*.5)/width;
     const away = clamp((Math.abs(delta)-.045)/.34);
     const loosen = away*away*(3-2*away);
@@ -112,10 +114,8 @@ export default function WorkGallery() {
  const go = (index: number) => {
   const stage = root.current!.closest<HTMLElement>('.work-prelude')!;
   const width = root.current!.clientWidth;
-  const mobile = width <= 700, stride = mobile ? 1.02 : .52, total = mobile ? 5.11 : 2.87;
   const cardWidth = root.current!.querySelector<HTMLElement>('.work-card')!.offsetWidth;
-  const destination = (1-cardWidth/width)*.5;
-  const catalog = .16+.84*(1.12+index*stride-destination)/total;
+  const catalog = galleryCardProgress(width, cardWidth, index);
   const top = stage.getBoundingClientRect().top+scrollY+(stage.offsetHeight-innerHeight)*(.34+.66*catalog);
   window.scrollTo({top, behavior: reducedMotion.current ? 'instant' : 'smooth'});
  };

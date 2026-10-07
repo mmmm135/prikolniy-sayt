@@ -9,6 +9,8 @@ import {createStrokeScene} from './stroke-scene';
 import {createWildlife} from './wildlife';
 import Garden from './Garden';
 import WorkPrelude from './WorkPrelude';
+import Process from './Process';
+import AboutStudio from './AboutStudio';
 import {restoreWorkReturn} from './work-return';
 
 export default function Home(){
@@ -61,6 +63,8 @@ export default function Home(){
   </section>
   <Garden/>
   <WorkPrelude/>
+  <Process/>
+  <AboutStudio/>
  </main>;
 }
 

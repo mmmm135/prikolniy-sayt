@@ -1,6 +1,7 @@
 import {chromium} from 'file:///C:/Users/User/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
 import {mkdir, writeFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import {galleryCardProgress, galleryGeometry} from '../app/work-gallery-motion.ts';
 const folder = 'work/refinement-qa';
 const motionOnly=process.argv.includes('--motion-only');
 await mkdir(folder, {recursive:true});
@@ -15,12 +16,13 @@ async function at(p) {
  await page.waitForTimeout(1500);
 }
 async function choose(i,offset=0) {
- await page.evaluate(({i,offset})=>{
-  const e=document.querySelector('#work'),width=innerWidth,mobile=width<=700;
-  const ratio=document.querySelector('.work-card').offsetWidth/width;
-  const catalog=.16+.84*(1.12+i*(mobile?1.02:.52)-(1-ratio)*.5-offset)/(mobile?5.11:2.87);
+ const width=page.viewportSize().width,cardWidth=await page.locator('.work-card').first().evaluate(e=>e.offsetWidth);
+ const {duration,total}=galleryGeometry(width,cardWidth);
+ const catalog=galleryCardProgress(width,cardWidth,i)-duration*offset/total;
+ await page.evaluate(catalog=>{
+  const e=document.querySelector('#work');
   scrollTo({top:e.getBoundingClientRect().top+scrollY+(e.offsetHeight-innerHeight)*(.34+.66*catalog),behavior:'instant'});
- },{i,offset});
+ },catalog);
  await page.waitForTimeout(2500);
  await page.mouse.move(50,450);
 }
@@ -132,11 +134,11 @@ try {
   await mobile.evaluate(()=>{const e=document.querySelector('#work');scrollTo(0,e.getBoundingClientRect().top+scrollY+(e.offsetHeight-innerHeight)*(.34+.66*.4));});
   await mobile.waitForTimeout(1600);
   for(const i of [0,4]) {
-   await mobile.evaluate(i=>{
-    const e=document.querySelector('#work'),ratio=document.querySelector('.work-card').offsetWidth/innerWidth;
-    const catalog=.16+.84*(1.12+i*1.02-(1-ratio)*.5)/5.11;
+   const catalog=galleryCardProgress(width,await mobile.locator('.work-card').first().evaluate(e=>e.offsetWidth),i);
+   await mobile.evaluate(catalog=>{
+    const e=document.querySelector('#work');
     scrollTo({top:e.getBoundingClientRect().top+scrollY+(e.offsetHeight-innerHeight)*(.34+.66*catalog),behavior:'instant'});
-   },i);await mobile.waitForTimeout(1600);
+   },catalog);await mobile.waitForTimeout(1600);
    const bounds=await mobile.locator('.work-card').nth(i).boundingBox();
    assert(bounds.y>0 && bounds.y+bounds.height<height,`Clipping at ${width}x${height}, card ${i+1}`);
    assert(await mobile.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Horizontal overflow');

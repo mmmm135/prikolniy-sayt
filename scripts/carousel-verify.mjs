@@ -1,4 +1,5 @@
 import {chromium} from 'file:///C:/Users/User/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
+import {galleryCardProgress} from '../app/work-gallery-motion.ts';
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--enable-unsafe-swiftshader']});
 const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];
 page.on('pageerror',e=>errors.push(e.message));
@@ -8,12 +9,12 @@ await at(.37);const before=await page.locator('.work-card').first().boundingBox(
 if(!(after.x<before.x&&after.y<before.y))throw Error('Carousel does not move diagonally');
 console.log('Diagonal movement', {dx:after.x-before.x,dy:after.y-before.y});
 for(let i=0;i<5;i++){
- await at(.16+.84*(1.12+i*.52-.33)/2.87);
+ await at(galleryCardProgress(1440,await page.locator('.work-card').first().evaluate(e=>e.offsetWidth),i));
  const frame=page.frames().find(f=>f.url().includes(`/concepts/`)&&f.url().includes(['little-loaf','sweet-blissful-blooms','little-local','down-home-roots','curly-and-spot'][i]));
  if(!frame)throw Error('Missing live preview '+i);
  const t1=await frame.locator('.hero img').evaluate(e=>getComputedStyle(e).transform);await page.waitForTimeout(350);const t2=await frame.locator('.hero img').evaluate(e=>getComputedStyle(e).transform);
  if(t1===t2)throw Error('Static preview '+i);
- const link=page.locator('.work-preview').nth(i),href=await link.getAttribute('href');
+ const link=page.locator('.work-card-surface').nth(i),href=await link.getAttribute('href');
  await link.click({position:{x:150,y:150}});await page.waitForURL('**'+href);await page.goBack({waitUntil:'networkidle'});
  console.log('Animated preview and clickable website',i+1);
 }
