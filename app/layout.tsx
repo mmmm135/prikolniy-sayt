@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "POUDEV — Сайты с характером",
+  title: "POUDEV — Независимая веб-студия",
   description: "Дизайн и разработка сайтов. Создаём с нуля, переосмысляем и развиваем существующие проекты.",
   other: {
     "codex-preview": "development",
@@ -24,3 +24,4 @@ export default function RootLayout({
     </html>
   );
 }
+

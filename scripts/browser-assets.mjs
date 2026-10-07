@@ -1,0 +1,3 @@
+import {chromium} from 'file:///C:/Users/User/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
+const b=await chromium.launch({headless:true,channel:'chrome'});const p=await b.newPage();
+for(const u of ['https://www.pexels.com/video/deer-family-2437257/','https://pixabay.com/videos/deer-herd-nature-wild-life-1948/']){await p.goto(u,{waitUntil:'domcontentloaded'});await p.waitForTimeout(2500);console.log(u,await p.title(),await p.locator('video').evaluateAll(v=>v.map(e=>e.currentSrc||e.src)));console.log((await p.content()).match(/https[^"\s<>]+\.mp4[^"\s<>]*/g)?.slice(0,6));}await b.close();
