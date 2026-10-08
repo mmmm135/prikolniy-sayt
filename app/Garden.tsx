@@ -1,6 +1,5 @@
 "use client";
 import {useEffect, useRef} from 'react';
-import gsap from 'gsap';
 
 export default function Garden(){
  const root=useRef<HTMLElement>(null),canvas=useRef<HTMLCanvasElement>(null);
@@ -9,29 +8,40 @@ export default function Garden(){
   let w=1,h=1,raf=0,last=0,started=false,visible=false,disposed=false;
   const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
   const copy=el.querySelectorAll('.botanical-reveal');
-  gsap.set(copy,{yPercent:reduced?0:105,opacity:reduced?1:0});
-  let textAnimation:gsap.core.Tween|undefined;
+  copy.forEach(node=>{const element=node as HTMLElement;element.style.transform=reduced?'none':'translateY(105%)';element.style.opacity=reduced?'1':'0';});
+  const textAnimations:Animation[]=[];
+  const reveal=()=>copy.forEach((node,index)=>{
+   const element=node as HTMLElement;
+   element.style.transform='none';element.style.opacity='1';
+   if(!reduced)textAnimations.push(element.animate([{transform:'translateY(105%)',opacity:0},{transform:'translateY(0)',opacity:1}],{duration:1150,delay:250+index*160,easing:'cubic-bezier(.215,.61,.355,1)',fill:'backwards'}));
+  });
   const video=document.createElement('video');
-  video.src='/art/rose-alex-tr.webm';video.muted=true;video.playsInline=true;video.preload='auto';video.playbackRate=1.35;
+  video.muted=true;video.playsInline=true;video.preload='none';video.playbackRate=1.35;
   const buffer=document.createElement('canvas');buffer.width=320;buffer.height=360;
   const sampler=buffer.getContext('2d',{willReadFrequently:true})!;
   const resize=()=>{w=c.clientWidth;h=c.clientHeight;const dpr=Math.min(devicePixelRatio,2);c.width=w*dpr;c.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);};resize();
   const begin=()=>{
    if(disposed||started||!visible||video.readyState<2)return;
    started=true;
-   textAnimation=gsap.to(copy,{yPercent:0,opacity:1,duration:reduced?0:1.15,stagger:reduced?0:.16,ease:'power3.out',delay:reduced?0:.25});
+   reveal();
    if(reduced)video.currentTime=11.8;else void video.play().catch(()=>{video.currentTime=11.8;});
   };
   video.addEventListener('loadeddata',begin);
+  const failed=()=>{if(!disposed&&!started){started=true;reveal();}};video.addEventListener('error',failed);
+  // Fetch this chapter's footage shortly before it enters view, not at the hero.
+  const loader=new IntersectionObserver(entries=>{
+   if(disposed||!entries[0].isIntersecting)return;
+   loader.disconnect();video.preload='auto';video.src='/art/rose-print.webm';video.load();
+  },{rootMargin:'700px'});loader.observe(el);
   const observer=new IntersectionObserver(entries=>{
    visible=entries[0].isIntersecting;
-   if(visible){begin();if(started&&!reduced&&!video.ended)void video.play().catch(()=>{});}else video.pause();
+   if(visible){begin();if(!raf)raf=requestAnimationFrame(draw);if(started&&!reduced&&!video.ended)void video.play().catch(()=>{});}else{video.pause();cancelAnimationFrame(raf);raf=0;}
   },{threshold:.2});observer.observe(el);
   const draw=(now:number)=>{
-   raf=requestAnimationFrame(draw);if(!visible||now-last<40||video.readyState<2)return;last=now;
+   raf=0;if(!visible||document.hidden)return;raf=requestAnimationFrame(draw);if(now-last<40||video.readyState<2)return;last=now;
    ctx.clearRect(0,0,w,h);
    // Real bud-to-flower footage, sampled into a stepped two-colour engraving.
-   sampler.drawImage(video,350,0,1200,1080,0,0,320,360);
+   sampler.drawImage(video,0,0,320,360);
    const data=sampler.getImageData(0,0,320,360).data;
    const mobile=w<700;
    const pw=mobile?w*.87:Math.min(w*.39,560),ph=pw*1.125;
@@ -62,8 +72,8 @@ export default function Garden(){
     }
    }
   };
-  raf=requestAnimationFrame(draw);addEventListener('resize',resize);
-  return()=>{disposed=true;cancelAnimationFrame(raf);observer.disconnect();textAnimation?.kill();video.pause();video.removeEventListener('loadeddata',begin);video.removeAttribute('src');video.load();removeEventListener('resize',resize);};
+  const visibility=()=>{if(!document.hidden&&visible&&!raf)raf=requestAnimationFrame(draw);};document.addEventListener('visibilitychange',visibility);addEventListener('resize',resize);
+  return()=>{disposed=true;cancelAnimationFrame(raf);observer.disconnect();loader.disconnect();document.removeEventListener('visibilitychange',visibility);textAnimations.forEach(animation=>animation.cancel());video.pause();video.removeEventListener('error',failed);video.removeEventListener('loadeddata',begin);video.removeAttribute('src');video.load();removeEventListener('resize',resize);};
  },[]);
  return <div className="afterwater"><div className="night-threshold" aria-hidden="true"/>
   <section ref={root} className="botanical" id="about" aria-labelledby="botanical-title">

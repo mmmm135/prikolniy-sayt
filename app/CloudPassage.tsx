@@ -1,5 +1,6 @@
 'use client';
 import {useEffect,useRef} from 'react';
+import {deferScene} from './defer-scene';
 import {vertex} from './scene-shaders';
 const fragment=`precision highp float;
 varying vec2 uv;
@@ -47,6 +48,7 @@ export default function CloudPassage(){
  const ref=useRef<HTMLCanvasElement>(null);
  useEffect(()=>{
   const canvas=ref.current!,section=canvas.closest('.work-prelude')!;
+  return deferScene(canvas,()=>{
   const gl=canvas.getContext('webgl',{alpha:true,premultipliedAlpha:false});if(!gl)return;
   const shader=(type:number,source:string)=>{const s=gl.createShader(type)!;gl.shaderSource(s,source);gl.compileShader(s);return s;};
   const vs=shader(gl.VERTEX_SHADER,vertex),fs=shader(gl.FRAGMENT_SHADER,fragment),program=gl.createProgram()!;
@@ -58,7 +60,7 @@ export default function CloudPassage(){
   let raf=0,last=0,visible=false,currentSpread=0,initialized=false;
   const resize=()=>{const d=Math.min(devicePixelRatio,1.25);canvas.width=canvas.clientWidth*d;canvas.height=canvas.clientHeight*d;gl.viewport(0,0,canvas.width,canvas.height);gl.uniform2f(resolution,canvas.width,canvas.height);};resize();
   const observer=new IntersectionObserver(e=>{visible=e[0].isIntersecting;});observer.observe(canvas);
-  const draw=(now:number)=>{raf=requestAnimationFrame(draw);if(!visible||now-last<33)return;const dt=Math.min(.1,(now-last)/1000);last=now;
+  const draw=(now:number)=>{raf=requestAnimationFrame(draw);if(!visible||document.hidden||now-last<33)return;const dt=Math.min(.1,(now-last)/1000);last=now;
    const top=section.getBoundingClientRect().top;
    const p=Math.max(0,Math.min(1,(innerHeight*.90-top)/(innerHeight*1.18)));
    const target=p*p*p*(p*(p*6.-15.)+10.);
@@ -67,6 +69,7 @@ export default function CloudPassage(){
    gl.uniform1f(spread,currentSpread);gl.uniform1f(time,reduced?0:now*.001);gl.drawArrays(gl.TRIANGLES,0,6);
   };raf=requestAnimationFrame(draw);addEventListener('resize',resize);
   return()=>{cancelAnimationFrame(raf);observer.disconnect();removeEventListener('resize',resize);gl.deleteBuffer(buffer);gl.deleteProgram(program);gl.deleteShader(vs);gl.deleteShader(fs);};
+  });
  },[]);
  return <canvas ref={ref} className="cloud-passage" aria-hidden="true"/>;
 }

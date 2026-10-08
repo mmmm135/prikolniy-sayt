@@ -1,61 +1,71 @@
 
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+@source "./";
+
+/* The original engraved artwork paints before the optional animated scene. */
+.hero-poster{position:absolute;inset:0;display:block;pointer-events:none}
+.hero-poster img{display:block;width:100%;height:100%;object-fit:cover}
+.is-ready .hero-poster{opacity:0;transition:opacity .3s}
+.stroke-field{opacity:0}.is-ready .stroke-field{opacity:1}
+.scene-unavailable .hero-poster{opacity:1}
+.scene-unavailable :is(.night,.stroke-field){visibility:hidden}
+.scene-unavailable .intro{opacity:1;transform:none}
 @font-face {
   font-family: 'Golos Text';
   font-style: normal;
   font-weight: 400;
-  font-display: swap;
-  src: url(/fonts/golos-0.ttf) format('truetype');
+  font-display: optional;
+  src: url(/fonts/golos-0.woff2) format('woff2');
 }
 @font-face {
   font-family: 'Golos Text';
   font-style: normal;
   font-weight: 500;
-  font-display: swap;
-  src: url(/fonts/golos-1.ttf) format('truetype');
+  font-display: optional;
+  src: url(/fonts/golos-1.woff2) format('woff2');
 }
 @font-face {
   font-family: 'Golos Text';
   font-style: normal;
   font-weight: 600;
-  font-display: swap;
-  src: url(/fonts/golos-2.ttf) format('truetype');
+  font-display: optional;
+  src: url(/fonts/golos-2.woff2) format('woff2');
 }
 
 @font-face {
   font-family: 'Cormorant Garamond';
   font-style: italic;
   font-weight: 500;
-  font-display: swap;
-  src: url(/fonts/scene-0.ttf) format('truetype');
+  font-display: optional;
+  src: url(/fonts/scene-0.woff2) format('woff2');
 }
 @font-face {
   font-family: 'Cormorant Garamond';
   font-style: normal;
   font-weight: 500;
-  font-display: swap;
-  src: url(/fonts/scene-1.ttf) format('truetype');
+  font-display: optional;
+  src: url(/fonts/scene-1.woff2) format('woff2');
 }
 @font-face {
   font-family: 'Cormorant Garamond';
   font-style: normal;
   font-weight: 600;
-  font-display: swap;
-  src: url(/fonts/scene-2.ttf) format('truetype');
+  font-display: optional;
+  src: url(/fonts/scene-2.woff2) format('woff2');
 }
 @font-face {
   font-family: 'Unbounded';
   font-style: normal;
   font-weight: 400;
-  font-display: swap;
-  src: url(/fonts/scene-3.ttf) format('truetype');
+  font-display: optional;
+  src: url(/fonts/scene-3.woff2) format('woff2');
 }
 @font-face {
   font-family: 'Unbounded';
   font-style: normal;
   font-weight: 600;
-  font-display: swap;
-  src: url(/fonts/scene-4.ttf) format('truetype');
+  font-display: optional;
+  src: url(/fonts/scene-4.woff2) format('woff2');
 }
 
 :root{--paper:#c9b894;--ink:#292920}*{box-sizing:border-box}html{background:var(--paper)}body{margin:0;color:var(--ink);font-family:'Golos Text',Arial,sans-serif}.scene-scroll{height:390svh;--p:0}.scene{height:100svh;position:sticky;top:0;overflow:hidden;background:var(--paper)}.night,.stroke-field{position:absolute;inset:0;width:100%;height:100%;display:block}.night{opacity:0;transition:opacity 1.1s}.is-ready .night{opacity:1}.stroke-field{pointer-events:none}.intro{position:absolute;left:5.5%;top:29%;opacity:clamp(0,calc(1 - var(--p)*11),1);transform:translateY(calc(var(--p)*-180px));pointer-events:none}.eyebrow{font-size:10px;letter-spacing:.2em;opacity:.7}.intro h1{font-size:clamp(24px,3vw,52px);font-weight:400;letter-spacing:-.045em;line-height:1.12;margin:20px 0 0;text-wrap:balance}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0)}.fallback{position:absolute;inset:0;background:var(--paper);display:flex;align-items:center;justify-content:center}.fallback strong{font-size:15vw}.fallback~.intro{display:none}.studio-content{position:relative;padding:7vw 6vw 3vw;background:var(--paper)}.editorial{display:grid;grid-template-columns:23% 1fr;gap:4vw;padding:7vw 0 9vw;border-top:1px solid #29292050}.section-index{font-size:11px;letter-spacing:.14em;padding-top:17px}.editorial h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(52px,6.7vw,110px);font-weight:500;line-height:.96;letter-spacing:-.045em;margin:0 0 4vw}.editorial h2 em{font-weight:500}.editorial-text{display:grid;grid-template-columns:1fr 1fr;gap:4vw;max-width:760px}.editorial p{font-size:15px;line-height:1.65;margin:0;max-width:330px}.approach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3vw}.approach-grid article{border-top:1px solid #29292050;padding-top:22px}.approach-grid article>span{font-size:10px;opacity:.6}.approach-grid h3{font-size:23px;font-weight:400;letter-spacing:-.035em;margin:25px 0 13px}.approach-grid p{font-size:14px}.asset-credit{display:inline-block;color:inherit;font-size:10px;opacity:.6;text-decoration:none;margin-top:2vw}.asset-credit:hover{opacity:1;text-decoration:underline}@media(max-width:700px){.intro{left:6%;top:25%}.intro h1{font-size:24px}.eyebrow{font-size:9px}.scene-scroll{height:360svh}.studio-content{padding:60px 7vw 30px}.editorial{grid-template-columns:1fr;gap:30px;padding:38px 0 70px}.section-index{font-size:10px;padding-top:0}.editorial h2{font-size:52px;margin-bottom:32px}.editorial-text,.approach-grid{grid-template-columns:1fr;gap:24px}.editorial p{font-size:14px;max-width:none}.approach-grid h3{margin-top:15px}.asset-credit{margin-top:10px}}@media(prefers-reduced-motion:reduce){.scene-scroll{height:300svh}.night{transition:none}}

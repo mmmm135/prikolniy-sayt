@@ -1,5 +1,5 @@
-@font-face{font-family:POUDEV Return Text;src:url('/fonts/golos-0.ttf') format('truetype');font-weight:400;font-display:swap}
-@font-face{font-family:POUDEV Return Brand;src:url('/fonts/scene-3.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:POUDEV Return Text;src:url('/fonts/golos-0.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:POUDEV Return Brand;src:url('/fonts/scene-3.woff2') format('woff2');font-weight:400;font-display:swap}
 .poudev-return{position:fixed;left:32px;bottom:32px;z-index:2147483647;display:inline-flex;align-items:center;gap:16px;min-height:64px;padding:0 28px;box-sizing:border-box;border-radius:999px;background:#f4eddf;color:#292920;border:1px solid #29292012;box-shadow:0 12px 36px #17171126,0 2px 6px #1717110a;font:400 14px/1.2 'POUDEV Return Text',Arial,sans-serif;text-decoration:none;white-space:nowrap;transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s,background .3s;isolation:isolate;-webkit-tap-highlight-color:transparent}
 .poudev-return-arrow{display:block;width:22px;height:22px;flex:none;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
 .poudev-return-copy{display:flex;align-items:center;gap:9px}

@@ -1,23 +1,31 @@
 'use client';
 import {useEffect,useRef} from 'react';
-import {createWildlife} from './wildlife';
+import {createSceneFallback} from './scene-fallback';
 import CloudPassage from './CloudPassage';
 import WorkGallery from './WorkGallery';
-import {createWorkEnvironment} from './work-environment';
 
 export default function WorkPrelude(){
  const root=useRef<HTMLElement>(null),surface=useRef<HTMLCanvasElement>(null);
  useEffect(()=>{
   const el=root.current!,canvas=surface.current!,ctx=canvas.getContext('2d')!;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const environment=createWorkEnvironment(!reduced);
-  const birds=createWildlife({towardCenter:true,modelUrl:'/models/work-stork.glb'});
+  let environment:ReturnType<typeof import('./work-environment').createWorkEnvironment>=createSceneFallback();
+  let birds:ReturnType<typeof import('./wildlife').createWildlife>=createSceneFallback();
   const buffer=document.createElement('canvas');buffer.width=256;buffer.height=288;
   const sample=buffer.getContext('2d',{willReadFrequently:true})!;
   const birdBuffer=document.createElement('canvas');birdBuffer.width=720;birdBuffer.height=450;
   const birdSample=birdBuffer.getContext('2d',{willReadFrequently:true})!;
   let pixels:Uint8ClampedArray|undefined,w=1,h=1,frame=0,last=0,visible=false,disposed=false,environmentRunning=false;
-  const landscape=new Image();landscape.onload=()=>{if(disposed)return;sample.drawImage(landscape,60,440,1870,1833,0,0,256,288);pixels=sample.getImageData(0,0,256,288).data;};landscape.src='/art/work-rock.jpg';
+  const landscape=new Image();landscape.onload=()=>{if(disposed)return;sample.drawImage(landscape,0,0,256,288);pixels=sample.getImageData(0,0,256,288).data;};
+  const loader=new IntersectionObserver(entries=>{
+   if(!entries[0].isIntersecting||disposed)return;loader.disconnect();
+   landscape.src='/art/work-rock-sample.webp';
+   void Promise.all([import('./work-environment'),import('./wildlife')]).then(([world,wildlife])=>{
+    if(disposed)return;
+    environment=world.createWorkEnvironment(!reduced);birds=wildlife.createWildlife({towardCenter:true,modelUrl:'/models/work-stork.glb'});
+    environment.resize(w,h);birds.resize(w,h);if(visible)environment.prepare();
+   }).catch(error=>console.warn('Work scene unavailable',error));
+  },{rootMargin:'1000px'});loader.observe(el);
   const resize=()=>{w=canvas.clientWidth;h=canvas.clientHeight;const d=Math.min(devicePixelRatio,1.5);canvas.width=w*d;canvas.height=h*d;ctx.setTransform(d,0,0,d,0,0);birds.resize(w,h);environment.resize(w,h);};resize();
   const observer=new IntersectionObserver(e=>{visible=e[0].isIntersecting;if(visible)environment.prepare();else {environment.pause();environmentRunning=false;}});observer.observe(el);
   const visibility=()=>{if(document.hidden){environment.pause();environmentRunning=false;}};
@@ -90,7 +98,7 @@ export default function WorkPrelude(){
 
   };
   frame=requestAnimationFrame(draw);addEventListener('resize',resize);
-  return()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();document.removeEventListener('visibilitychange',visibility);birds.dispose();environment.dispose();removeEventListener('resize',resize);};
+  return()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();loader.disconnect();document.removeEventListener('visibilitychange',visibility);birds.dispose();environment.dispose();removeEventListener('resize',resize);};
  },[]);
  return <section ref={root} className="work-prelude" id="work" aria-labelledby="work-title"><div className="work-stage"><CloudPassage/><canvas ref={surface} aria-hidden="true"/><div className="work-heading" lang="en"><span className="work-kicker">A CLOSER LOOK</span><h2 id="work-title">Selected<br/><em>work.</em></h2><span className="work-caption">Individual ideas. Built for the real world.</span></div><WorkGallery/></div></section>;
 }

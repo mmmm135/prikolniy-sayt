@@ -39,6 +39,11 @@ export default function WorkGallery() {
   };
   const resizer = new ResizeObserver(resize);
   resizer.observe(el); cards.forEach(card => resizer.observe(card)); resize();
+  const mediaObserver=new IntersectionObserver(entries=>{
+   if(!entries[0].isIntersecting)return;mediaObserver.disconnect();
+   el.querySelectorAll<HTMLSourceElement>('source[data-srcset]').forEach(source=>{source.srcset=source.dataset.srcset!;});
+   el.querySelectorAll<HTMLImageElement>('img[data-src]').forEach(image=>{image.srcset=image.dataset.srcset!;image.src=image.dataset.src!;});
+  },{rootMargin:'1000px'});mediaObserver.observe(stage);
   const observer = new IntersectionObserver(entries => {
    visible = entries[0].isIntersecting;
    if (!visible) {
@@ -94,7 +99,7 @@ export default function WorkGallery() {
    cards.forEach((card,i)=>{card.dataset.primary=String(i===closest);});
   };
   frame = requestAnimationFrame(draw);
-  return () => {cancelAnimationFrame(frame); observer.disconnect(); resizer.disconnect();};
+  return () => {cancelAnimationFrame(frame); observer.disconnect();mediaObserver.disconnect(); resizer.disconnect();};
  }, []);
 
  const point = (event: PointerEvent<HTMLAnchorElement>) => {
@@ -127,7 +132,7 @@ export default function WorkGallery() {
   <div className="gallery-track">{projects.map((project, i) => <article className="work-card" key={project.slug} style={{'--card-index':i} as CSSProperties}>
    <a className="work-card-surface" href={`/concepts/${project.slug}.html`} aria-label={`Explore ${project.name} website concept`} onPointerMove={point} onPointerLeave={leave} onClick={()=>saveWorkReturn(project.slug)}>
     <div className="work-preview">
-     <div className="work-preview-media"><picture><source media="(max-width:700px)" srcSet={`/concepts/${project.slug}-portrait.jpg`}/><img src={`/concepts/${project.slug}-preview.jpg`} alt={`${project.name} website design preview`}/></picture>
+     <div className="work-preview-media"><picture><source media="(max-width:700px)" sizes="88vw" data-srcset={`/concepts/${project.slug}-portrait-small.webp 640w, /concepts/${project.slug}-portrait.webp 1000w`}/><img data-src={`/concepts/${project.slug}-preview.webp`} data-srcset={`/concepts/${project.slug}-preview-small.webp 640w, /concepts/${project.slug}-preview.webp 1440w`} sizes="44vw" loading="lazy" decoding="async" width={1440} height={1000} alt={`${project.name} website design preview`}/></picture>
       <iframe title={`${project.name} animated website preview`} tabIndex={-1} aria-hidden="true" onLoad={event => {
        const frame = event.currentTarget;
        if (!frame.src.includes('preview=1')) return;

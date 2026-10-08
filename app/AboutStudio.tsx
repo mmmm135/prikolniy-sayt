@@ -50,7 +50,7 @@ export default function AboutStudio(){
   <div className="studio-stage" data-scroll-stage>
    <header className="chapter-header"><span>About the studio</span><span>Independent by choice</span></header>
    <canvas ref={pen} className="studio-pen" aria-hidden="true"/>
-   <div className="studio-wordmark" aria-label="POUDEV">{'POUDEV'.split('').map((letter,i)=><span className="studio-letter" key={i} aria-hidden="true" style={{'--letter-index':i} as CSSProperties}><span>{letter}</span></span>)}</div>
+   <div className="studio-wordmark" role="img" aria-label="POUDEV">{'POUDEV'.split('').map((letter,i)=><span className="studio-letter" key={i} aria-hidden="true" style={{'--letter-index':i} as CSSProperties}><span>{letter}</span></span>)}</div>
    <div className="studio-intro"><p>Small studio.</p><span>Close to your project.</span></div>
    <div className="studio-dialogue"><div className="studio-people"><span>You.</span><span>Us.</span></div>
     <div className="direct-line" aria-hidden="true"><span/><i/><i/></div>

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 
 // One complete Shrub 04 branch by Rico Cilliers / Poly Haven (CC0).
 // Original leaf silhouettes, bark, UVs and normal maps remain intact.
@@ -44,8 +45,8 @@ export function createWorkBranch() {
   root.clear();
  };
  const ready = Promise.all([
-  new GLTFLoader().loadAsync('/models/work-shrub/natural-branch.gltf'),
-  new THREE.TextureLoader().loadAsync('/models/work-shrub/textures/shrub_04_alpha_2k.png'),
+  new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync('/models/work-shrub/optimized.glb'),
+  new THREE.TextureLoader().loadAsync('/models/work-shrub/textures/shrub_04_alpha_2k.webp'),
  ]).then(([gltf,alpha])=>{
   alpha.flipY=false;alpha.colorSpace=THREE.NoColorSpace;textures.add(alpha);
   gltf.scene.traverse(object=>{

@@ -3,7 +3,7 @@ export const fragment=`precision highp float;
 varying vec2 uv;
 uniform vec2 resolution,pointer;
 uniform float progress,time,landing;
-uniform sampler2D landscape,pond,wildlife;
+uniform sampler2D landscape,wildlife;
 float hash(float x){return fract(sin(x*127.13)*43758.54);}
 float ramp(float a,float b,float x){return smoothstep(a,b,x);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i.x+i.y*71.),hash(i.x+1.+i.y*71.),f.x),mix(hash(i.x+(i.y+1.)*71.),hash(i.x+1.+(i.y+1.)*71.),f.x),f.y);}
@@ -73,8 +73,8 @@ void main(){
  vec3 color=mix(paper,ink,inkAmount);
  float spread=ramp(.44,.75,landing)*.43;
  float clouds=ramp(.20,.43,landing);
- color=cloudLayer(color,p,spread,clouds*(1.-lake), paper,ink,pitch*1.8);
- color=cloudLayer(color,vec2(p.x,p.y+.82),.25,lake*.6,paper,ink,pitch*1.8);
+ if(clouds*(1.-lake)>.001)color=cloudLayer(color,p,spread,clouds*(1.-lake), paper,ink,pitch*1.8);
+ if(lake>.001)color=cloudLayer(color,vec2(p.x,p.y+.82),.25,lake*.6,paper,ink,pitch*1.8);
  // Distant atmosphere is deliberately quiet behind the complete wordmark.
  vec2 animalUV=vec2(floor(p.x*resolution.x/pitch)*pitch/resolution.x,floor(p.y*resolution.y/4.)*4./resolution.y);
  vec4 animal=texture2D(wildlife,animalUV);

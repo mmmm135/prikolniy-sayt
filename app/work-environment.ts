@@ -28,9 +28,9 @@ export function createWorkEnvironment(motion = true) {
  void branch.ready.then(()=>{if(!disposed)branchDirty=true;})
   .catch(error=>{if(!disposed)console.error('Work scene branch could not load',error);});
 
- const videos = ['work-herd-meadow'].map(name => {
+ const videos = ['work-herd-print'].map(name => {
   const video = document.createElement('video');
-  video.src = `/art/${name}.mp4`;
+  video.src = '/art/work-herd-print.mp4';
   video.muted = true; video.loop = true; video.playsInline = true;
   video.preload = 'none'; video.playbackRate = name.includes('herd') ? .75 : .7;
   return video;
@@ -41,7 +41,7 @@ export function createWorkEnvironment(motion = true) {
   return texture;
  });
  const posters = ['work-herd-poster'].map(name => {
-  const texture = new THREE.TextureLoader().load(`/art/${name}.jpg`);
+  const texture = new THREE.TextureLoader().load(`/art/${name}.webp`);
   texture.colorSpace = THREE.NoColorSpace;
   return texture;
  });

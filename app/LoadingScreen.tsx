@@ -20,7 +20,7 @@ export default function LoadingScreen({ready}:{ready:boolean}){
  useEffect(()=>{
   if(done||mode!=='intro')return;
   let scene:ReturnType<typeof createStrokeScene>;
-  try{scene=createStrokeScene(canvas.current!);}catch(error){console.warn('Loading wordmark unavailable',error);return;}
+  try{scene=createStrokeScene(canvas.current!,{sampleLandscape:false});}catch(error){console.warn('Loading wordmark unavailable',error);return;}
   let frame=0;const begin=performance.now(),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const draw=(now:number)=>{const t=leaving?Math.min(1,(now-begin)/(reduced?1:1100)):0;scene.drawMark(1-Math.pow(1-t,3));canvas.current?.closest('.loading-screen')?.classList.add('loading-mark-live');if(t<1||!leaving)frame=requestAnimationFrame(draw);};frame=requestAnimationFrame(draw);
   const resize=()=>scene.resize();addEventListener('resize',resize);return()=>{cancelAnimationFrame(frame);removeEventListener('resize',resize);};

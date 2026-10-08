@@ -18,12 +18,14 @@ export default function ContactFinale(){
  const [fieldErrors,setFieldErrors]=useState<FieldErrors>({});
  useEffect(()=>{
   const element=section.current!,surface=canvas.current!;
-  let disposed=false,visible=false,frame=0,progress=0,reduced=false;
+  let disposed=false,visible=false,frame=0,progress=0,reduced=false,lastPaint=0;
   let meadow:ReturnType<typeof import('./contact-meadow').createContactMeadow>|undefined;
   const resize=()=>meadow?.resize(surface.clientWidth,surface.clientHeight);
-  const paint=()=>{
+  const paint=(now:number)=>{
    frame=0;if(disposed||!visible||document.hidden)return;
-   meadow?.draw(progress,performance.now(),reduced);
+   const bounds=element.getBoundingClientRect();
+   if(bounds.top>=innerHeight||bounds.bottom<=0)return;
+   if(reduced||now-lastPaint>=1000/30){lastPaint=now;meadow?.draw(progress,now,reduced);}
    if(!reduced)frame=requestAnimationFrame(paint);
   };
   const schedule=()=>{if(visible&&!frame)frame=requestAnimationFrame(paint);};
@@ -84,7 +86,7 @@ export default function ContactFinale(){
    <div className="finale-invitation"><span>Something good starts</span><em>with a little space.</em></div>
   </div>
   <div className="finale-scroll-space" aria-hidden="true"/>
-  <div className="contact-sheet">
+  <div className="contact-sheet" id="contact-sheet">
    <div className="contact-copy"><p className="contact-eyebrow">Your next chapter</p><h2 id="contact-title">Let’s make<br/><em>something good.</em></h2><p>Tell us about your business,<br className="contact-desktop-break"/> your idea, or the thing you’d like to change.</p></div>
    {sent?<div className="contact-success" ref={status} tabIndex={-1} role="status"><span>Enquiry received</span><h3>A good<br/><em>beginning.</em></h3><p>Thank you for sharing your idea.<br/>We’ll be in touch using the email you left.</p><button type="button" onClick={()=>{setSent(false);setError('');setFieldErrors({});}}>Send another enquiry <span aria-hidden="true">↗</span></button></div>:
    <form className="contact-form" noValidate onSubmit={submit} onInput={event=>{

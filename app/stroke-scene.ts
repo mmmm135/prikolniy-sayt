@@ -10,7 +10,7 @@ const glyphs:Glyph[]=[
  {width:25,outer:[[0,0],[6,0],[12.5,24],[19,0],[25,0],[16,32],[9,32]]}
 ];
 function inside(x:number,y:number,points:Point[]){let hit=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const [xi,yi]=points[i],[xj,yj]=points[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)hit=!hit;}return hit;}
-export function createStrokeScene(canvas:HTMLCanvasElement){
+export function createStrokeScene(canvas:HTMLCanvasElement,options={sampleLandscape:true}){
  const ctx=canvas.getContext('2d')!;let w=1,h=1,dpr=1;
  let bars:{x:number;a:number;b:number;seed:number}[]=[];
  const rnd=(n:number)=>{const v=Math.sin(n*127.13+19.7)*43758.54;return v-Math.floor(v);};
@@ -27,8 +27,15 @@ export function createStrokeScene(canvas:HTMLCanvasElement){
  };
  const source=document.createElement('canvas');source.width=256;source.height=144;
  const sourceContext=source.getContext('2d',{willReadFrequently:true})!;
- let pixels:Uint8ClampedArray|null=null;
- const sourceImage=new Image();sourceImage.onload=()=>{sourceContext.drawImage(sourceImage,0,0,256,144);pixels=sourceContext.getImageData(0,0,256,144).data;};sourceImage.src='/art/night-valley.png';
+ let runsByColumn:[number,number][][]=[];
+ const sourceImage=new Image();sourceImage.onload=()=>{
+  sourceContext.drawImage(sourceImage,0,0,256,144);const pixels=sourceContext.getImageData(0,0,256,144).data;
+  runsByColumn=Array.from({length:256},(_,sx)=>{
+   const runs:[number,number][]=[];let a=-1;
+   for(let sy=0;sy<=144;sy++){const hit=sy<144&&pixels[(sy*256+sx)*4]>70;if(hit&&a<0)a=sy;if(a>=0&&!hit){if(sy-a>1)runs.push([a/144,sy/144]);a=-1;}}
+   return runs;
+  });
+ };if(options.sampleLandscape)sourceImage.src='/art/night-valley-sample.webp';
  let impactTime:number|null=null;
  const draw=(p:number,t:number)=>{
   ctx.clearRect(0,0,w,h);const pitch=w>1000?5:3.5,height=Math.min(w*.185,h*.3),hero=Math.min(p/.47,1);
@@ -48,7 +55,7 @@ export function createStrokeScene(canvas:HTMLCanvasElement){
     const travel=1-local,x=w*.5+(b.x-w*.5)*scale;
     const sx=Math.min(255,Math.max(0,Math.floor(b.x/w*256)));
     let start=.1,end=.9;
-    if(pixels){const runs:[number,number][]=[];let a=-1;for(let sy=0;sy<=144;sy++){const hit=sy<144&&pixels[(sy*256+sx)*4]>70;if(hit&&a<0)a=sy;if(a>=0&&!hit){if(sy-a>1)runs.push([a/144,sy/144]);a=-1;}}const run=runs[Math.min(runs.length-1,Math.floor(b.seed*runs.length))];if(run){start=run[0];end=run[1];}else{start=b.a;end=b.a+.015;}}
+    if(runsByColumn.length){const runs=runsByColumn[sx],run=runs[Math.min(runs.length-1,Math.floor(b.seed*runs.length))];if(run){start=run[0];end=run[1];}else{start=b.a;end=b.a+.015;}}
 
     let y=(top+b.a*logoHeight)*local+start*h*travel;
     const length=(b.b-b.a)*logoHeight*local+(end-start)*h*travel,split=length*(.25+b.seed*.5),gap=(1-settle)*(5+b.seed*20);

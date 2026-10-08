@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {clamp,ease} from './scroll-scene';
 
 const ramp=(a:number,b:number,p:number)=>ease((p-a)/(b-a));
@@ -83,10 +84,10 @@ export function createContactMeadow(canvas:HTMLCanvasElement){
  const groundMaterial=new THREE.MeshStandardMaterial({color:'#c6c7af',roughness:1});materials.add(groundMaterial);
  const ground=new THREE.Mesh(groundGeometry,groundMaterial);ground.position.z=-32;scene.add(ground);
  let seed=3041;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
- const loader=new GLTFLoader();
+ const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
  const ready=Promise.all([
-  loader.loadAsync('/models/meadow/grass/model.gltf'),loader.loadAsync('/models/meadow/orchid/model.gltf'),
-  loader.loadAsync('/models/meadow/butterfly.gltf'),new THREE.TextureLoader().loadAsync('/models/meadow/grass/alpha.png'),
+  loader.loadAsync('/models/meadow/grass/optimized.glb'),loader.loadAsync('/models/meadow/orchid/optimized.glb'),
+  loader.loadAsync('/models/meadow/butterfly-optimized.glb'),new THREE.TextureLoader().loadAsync('/models/meadow/grass/alpha.webp'),
  ]).then(([grass,orchid,butterfly,alpha])=>{
   alpha.flipY=false;alpha.colorSpace=THREE.NoColorSpace;textures.add(alpha);
   const sources:THREE.Mesh[]=[];grass.scene.traverse(o=>{if(o instanceof THREE.Mesh)sources.push(o);});

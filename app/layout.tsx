@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:"(()=>{const root=document.documentElement;const nav=performance.getEntriesByType('navigation')[0];let seen=false;try{seen=sessionStorage.getItem('poudev-intro-seen')==='1';sessionStorage.setItem('poudev-intro-seen','1');}catch{}root.dataset.loadingMode=seen&&nav?.type!=='navigate'?'simple':'intro';root.dataset.loadingStarted=String(performance.now());root.classList.add('site-loading');})();"}}/></head>
+    <html lang="en" suppressHydrationWarning><head><link rel="preload" href="/fonts/golos-0.woff2" as="font" type="font/woff2" crossOrigin="anonymous"/></head>
       <body className="antialiased">{children}</body>
     </html>
   );
