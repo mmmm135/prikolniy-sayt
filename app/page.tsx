@@ -8,6 +8,7 @@ import Process from './Process';
 import AboutStudio from './AboutStudio';
 import ContactFinale from './ContactFinale';
 import SiteHeader from './SiteHeader';
+import LoadingScreen from './LoadingScreen';
 
 export default function Home(){
  const stage=useRef<HTMLElement>(null),canvas=useRef<HTMLCanvasElement>(null),strokes=useRef<HTMLCanvasElement>(null);
@@ -15,22 +16,17 @@ export default function Home(){
  const [failed,setFailed]=useState(false),[ready,setReady]=useState(false);
  useEffect(()=>{
   let disposed=false,started=false,cleanup:(()=>void)|undefined;
+  const deadline=setTimeout(()=>{if(!disposed)setFailed(true);},12000);
   const start=()=>{
    if(started||disposed)return;started=true;
    void import('./hero-scene').then(module=>{
     if(disposed)return;
-    cleanup=module.mountHero(stage.current!,canvas.current!,strokes.current!,()=>setReady(true),()=>setFailed(true),lenis=>{smoothScroll.current=lenis;});
+    cleanup=module.mountHero(stage.current!,canvas.current!,strokes.current!,()=>{clearTimeout(deadline);setReady(true);},()=>{clearTimeout(deadline);setFailed(true);},lenis=>{smoothScroll.current=lenis;});
    }).catch(error=>{console.warn('Hero enhancement unavailable',error);if(!disposed)setFailed(true);});
   };
-  // The server-rendered artwork and copy paint before initializing animated graphics.
-  // Download the animated controller on interaction, after the artwork is already usable.
-  window.addEventListener('scroll',start,{once:true,passive:true});
-  window.addEventListener('pointermove',start,{once:true,passive:true});
-  window.addEventListener('pointerdown',start,{once:true,passive:true});
-  window.addEventListener('keydown',start,{once:true});
-  let returning=false;try{returning=!!sessionStorage.getItem('poudev:work-return-pending');}catch{}
-  if(window.scrollY>0||location.hash||returning)start();
-  return()=>{disposed=true;window.removeEventListener('scroll',start);window.removeEventListener('pointermove',start);window.removeEventListener('pointerdown',start);window.removeEventListener('keydown',start);cleanup?.();smoothScroll.current=null;};
+  // Prepare the first painted scene while the original loading sequence plays.
+  start();
+  return()=>{disposed=true;clearTimeout(deadline);cleanup?.();smoothScroll.current=null;};
  },[]);
  useEffect(()=>{
   const navigate=(event:Event)=>{
@@ -45,6 +41,7 @@ export default function Home(){
   return()=>{window.removeEventListener('poudev:navigate',navigate);window.removeEventListener('poudev:menu',menu);};
  },[]);
  return <main>
+  <LoadingScreen ready={ready||failed}/>
   <SiteHeader/>
   <section id="home" ref={stage} className={"scene-scroll"+(ready?" is-ready":"")+(failed?" scene-unavailable":"")} aria-label="POUDEV introductory artwork">
    <div className="scene"><picture className="hero-poster"><source media="(max-width:700px)" srcSet="/art/hero-mobile.webp"/><img src="/art/hero-desktop.webp" width={1440} height={900} fetchPriority="high" alt=""/></picture><canvas ref={canvas} className="night" aria-hidden="true"/><canvas ref={strokes} className="stroke-field" aria-hidden="true"/>

@@ -8,6 +8,7 @@ if(!(await realpath(output)).startsWith((await realpath(repository))+path.sep))t
 // An explicit set supports computed shader/video URLs that static source scanning misses.
 // Source files in public remain available for future artwork revisions.
 const assets=new Set([
+ 'art/loading-butterfly-filmstrip.webp',
  'art/hero-desktop.webp','art/hero-mobile.webp','art/night-valley-render.webp','art/night-valley-sample.webp',
  'art/rose-print.webm','art/work-rock-sample.webp','art/studio-hand-sample.webp','art/work-herd-print.mp4','art/work-herd-poster.webp',
  'models/bird.glb','models/work-stork.glb','models/work-shrub/optimized.glb','models/work-shrub/textures/shrub_04_alpha_2k.webp',

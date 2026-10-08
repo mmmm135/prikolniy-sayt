@@ -8,7 +8,7 @@ const sections=[['about','The idea','From the first spark to launch'],['work','S
 export default function SiteHeader(){
  const dialog=useRef<HTMLDialogElement>(null),trigger=useRef<HTMLButtonElement>(null),timer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const [open,setOpen]=useState(false);
- const [revealed,setRevealed]=useState(true),[hidden,setHidden]=useState(false);
+ const [revealed,setRevealed]=useState(false),[hidden,setHidden]=useState(false);
  useEffect(()=>{
   const root=document.documentElement;
   let frame=0,previous=window.scrollY,distance=0,direction=0;
