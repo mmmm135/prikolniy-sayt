@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {createSceneFallback} from './scene-fallback';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import {createWorkBranch} from './work-branch';
@@ -6,7 +7,9 @@ import {createWorkBranch} from './work-branch';
 // Filmed animals and an articulated 3D bough sampled into one two-colour print grid.
 // Credits for the original artwork and animation: /ASSET-CREDITS.md.
 export function createWorkEnvironment(motion = true) {
- const renderer = new THREE.WebGLRenderer({alpha: true, antialias: false});
+ let renderer:THREE.WebGLRenderer;
+ try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:false});}
+ catch(error){console.warn('Work GPU scene unavailable',error);return createSceneFallback();}
  renderer.setClearColor(0, 0);
  const scene = new THREE.Scene(), camera = new THREE.Camera();
  const flightScene = new THREE.Scene();
@@ -203,7 +206,7 @@ export function createWorkEnvironment(motion = true) {
   geometryResources.forEach(resource => resource.dispose()); birdMaterial.dispose();
   videos.forEach(video => {video.removeAttribute('src'); video.load();});
   [...textures, ...posters].forEach(texture => texture.dispose());
-  branch.dispose(); branchTarget.dispose();flightTarget.dispose(); geometry.dispose(); material.dispose(); renderer.dispose();
+  branch.dispose(); branchTarget.dispose();flightTarget.dispose(); geometry.dispose(); material.dispose(); renderer.dispose(); renderer.forceContextLoss();
  };
  return {canvas: renderer.domElement, resize, prepare, draw, pause, dispose};
 }

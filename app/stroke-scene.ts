@@ -67,7 +67,12 @@ export function createStrokeScene(canvas:HTMLCanvasElement){
   }
   ctx.globalAlpha=1;
  };
- resize();return{resize,draw};
+ const drawMark=(travel:number)=>{
+  ctx.clearRect(0,0,w,h);ctx.globalAlpha=1;ctx.fillStyle='#c9b894';
+  const k=w<h?.64:.42,height=Math.min(w*.185,h*.3),target=h*(w<h?.57:.13),top=h*.84+(target-h*.84)*travel,pitch=w>1000?5:3.5;
+  for(const b of bars)ctx.fillRect(w*.055+(b.x-w*.06)*k,top+b.a*height*k,pitch*.7*k,(b.b-b.a)*height*k);
+ };
+ resize();return{resize,draw,drawMark};
 }
 
 

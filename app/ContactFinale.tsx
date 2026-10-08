@@ -34,23 +34,28 @@ export default function ContactFinale(){
    schedule();
   });
   // Start the heavier scene near this chapter, without downloading it at the hero.
-  let started=false;
+  let started=false,attempt=0,timeout:ReturnType<typeof setTimeout>|undefined;
+  const unavailable=()=>{clearTimeout(timeout);meadow?.dispose();meadow=undefined;element.classList.remove('finale-ready');element.classList.add('finale-unavailable');};
+  const start=()=>{
+   started=true;const current=++attempt;
+   timeout=setTimeout(()=>{if(!disposed&&current===attempt){attempt++;unavailable();}},20000);
+   import('./contact-meadow').then(module=>{
+    if(disposed||current!==attempt)return;
+    meadow=module.createContactMeadow(surface);resize();
+    return meadow.ready.then(()=>{if(!disposed&&current===attempt){clearTimeout(timeout);element.classList.remove('finale-unavailable');element.classList.add('finale-ready');schedule();}});
+   }).catch(e=>{console.error('Meadow scene unavailable',e);if(!disposed&&current===attempt)unavailable();});
+  };
   const observer=new IntersectionObserver(entries=>{
    visible=entries[0].isIntersecting;
-   if(visible&&!started){
-    started=true;
-    import('./contact-meadow').then(module=>{
-     if(disposed)return;
-     meadow=module.createContactMeadow(surface);resize();
-     return meadow.ready.then(()=>{if(!disposed){element.classList.add('finale-ready');schedule();}});
-    }).catch(e=>{console.error('Meadow scene unavailable',e);if(!disposed)element.classList.add('finale-unavailable');});
-   }
+   if(visible&&!started)start();
    if(visible)schedule();else{cancelAnimationFrame(frame);frame=0;}
   },{rootMargin:'700px'});observer.observe(element);
   const resizer=new ResizeObserver(()=>{resize();schedule();});resizer.observe(surface);
   document.addEventListener('visibilitychange',schedule);
-  const lost=(event:Event)=>{event.preventDefault();element.classList.add('finale-unavailable');};surface.addEventListener('webglcontextlost',lost);
-  return()=>{disposed=true;cancelAnimationFrame(frame);stopScroll();observer.disconnect();resizer.disconnect();meadow?.dispose();document.removeEventListener('visibilitychange',schedule);surface.removeEventListener('webglcontextlost',lost);};
+  const lost=(event:Event)=>{event.preventDefault();attempt++;unavailable();};
+  const restored=()=>{if(!disposed)start();};
+  surface.addEventListener('webglcontextlost',lost);surface.addEventListener('webglcontextrestored',restored);
+  return()=>{disposed=true;attempt++;clearTimeout(timeout);cancelAnimationFrame(frame);stopScroll();observer.disconnect();resizer.disconnect();meadow?.dispose();document.removeEventListener('visibilitychange',schedule);surface.removeEventListener('webglcontextlost',lost);surface.removeEventListener('webglcontextrestored',restored);};
  },[]);
  const submit=async(event:FormEvent<HTMLFormElement>)=>{
   event.preventDefault();if(sending)return;
@@ -94,7 +99,7 @@ export default function ContactFinale(){
     <div className="contact-action"><p>Just a conversation to start.</p><button type="submit" disabled={sending}>{sending?'Sending…':'Start a conversation'}<span aria-hidden="true">↗</span></button></div>
     <div ref={status} className="contact-feedback" role="alert" tabIndex={-1}>{error&&<p>{error}</p>}</div>
    </form>}
-   <footer className="contact-footer"><a href="#" aria-label="POUDEV — back to top" className="footer-brand">POUDEV</a><span>Independent web studio</span><div><a href="/ASSET-CREDITS.md" target="_blank" rel="noreferrer">Artwork credits</a><span>© {new Date().getFullYear()}</span></div></footer>
+   <footer className="contact-footer"><a href="#" aria-label="POUDEV — back to top" className="footer-brand">POUDEV</a><span>Independent web studio</span><span className="footer-copyright">© {new Date().getFullYear()}</span></footer>
   </div>
  </section>;
 }

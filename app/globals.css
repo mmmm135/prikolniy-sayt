@@ -184,3 +184,44 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:20;bac
  .explore-circle{right:14px;bottom:14px;width:42px;height:42px}
 }
 @media(prefers-reduced-motion:reduce){.work-card-surface,.work-preview-media,.card-highlight,.explore-circle,.preview-label,.caption-open{transition:none}.work-card-surface:hover,.work-card-surface:focus-visible{transform:none}.work-card-surface:hover .work-preview-media,.work-card-surface:focus-visible .work-preview-media{transform:none}.work-preview iframe{display:none}}
+
+/* Viewport coverage follows mobile browser chrome without changing chapter lengths. */
+html{overflow-x:clip;scrollbar-width:thin;scrollbar-color:#746c55 #292920}body{overflow-x:clip;background:var(--ink)}
+html::-webkit-scrollbar{width:9px}html::-webkit-scrollbar-track{background:var(--ink)}html::-webkit-scrollbar-thumb{background:#a99b7c;border:2px solid var(--ink);border-radius:0}html::-webkit-scrollbar-thumb:hover{background:var(--paper)}
+.scene,.work-stage{height:100dvh}.site-loading{overflow:hidden}
+.loading-screen{position:fixed;inset:0;z-index:100;overflow:hidden;pointer-events:auto}
+.loading-panels{position:absolute;inset:0;display:flex}.loading-panels i{flex:1;background:var(--ink);margin-right:-1px;transition:transform .95s cubic-bezier(.7,0,.25,1);transition-delay:var(--delay)}
+.loading-leaving .loading-panels i:nth-child(odd){transform:translateY(-105%)}.loading-leaving .loading-panels i:nth-child(even){transform:translateY(105%)}
+.loading-screen canvas{position:absolute;inset:0;width:100%;height:100%;transition:opacity .25s 1s}.loading-leaving canvas{opacity:0}
+.loading-object-space{position:absolute;inset:24% 25% 32%;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.loading-panels i{transition:opacity .2s;transition-delay:0}.loading-leaving .loading-panels i{transform:none;opacity:0}}
+
+.loading-object-space{inset:18% 15% 26%;transition:opacity .4s,transform .7s}.loading-object-space .loading-butterfly{position:static;display:block;width:100%;height:100%;transition:none;opacity:1}.loading-leaving .loading-object-space{opacity:0;transform:translateY(-18px)}
+@media(min-width:701px){.loading-object-space{inset:19% max(24%,calc((100% - 440px)/2)) 22%}}
+@media(prefers-reduced-motion:reduce){.loading-leaving .loading-object-space{transform:none}}
+
+.loading-simple{background:var(--ink);transition:opacity .35s ease}.loading-simple.loading-leaving{opacity:0;pointer-events:none}
+.loading-object-space{inset:16% 7% 28%}
+@media(min-width:701px){.loading-object-space{inset:18% max(20%,calc((100% - 520px)/2)) 20%}}
+
+.fallback{justify-content:flex-start;align-items:flex-start}.fallback strong{position:absolute;left:5.5%;top:13%;font-family:'Unbounded',sans-serif;font-weight:400;font-size:clamp(35px,6vw,86px);letter-spacing:-.07em}.fallback~.intro{display:block}
+@media(max-width:700px){.fallback strong{top:57%;font-size:12vw}}
+
+.scene-scroll.scene-unavailable{height:100dvh}
+
+/* Initial HTML is a complete loading frame, before the application hydrates. */
+.loading-static-mark{position:absolute;left:5.5%;top:84%;width:36.96%;height:auto}.loading-mark-live .loading-static-mark{visibility:hidden}
+.loading-static-object{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.loading-object-live .loading-static-object{visibility:hidden}
+html[data-loading-mode=simple] .loading-screen{background:var(--ink)}
+html[data-loading-mode=simple] .loading-screen :is(.loading-panels,.loading-object-space,.loading-static-mark,.loading-mark-canvas){display:none}
+html[data-loading-bypass=true] .loading-screen{display:none}
+@media(max-width:700px){.loading-static-mark{width:56.32%}}
+
+.loading-static-mark{height:min(7.77vw,12.6dvh)}
+@media(max-width:700px){.loading-static-mark{height:min(11.84vw,19.2dvh)}}
+
+.loading-object-space{display:flex;align-items:center;justify-content:center}
+.loading-butterfly-motion{position:relative;width:100%;max-width:520px;aspect-ratio:9/8;overflow:hidden}
+.loading-butterfly-filmstrip{display:block;position:absolute;left:0;top:0;width:100%;height:auto;max-width:none;animation:loading-filmed-motion 3.6s steps(60,end) infinite;will-change:transform}
+@keyframes loading-filmed-motion{to{transform:translateY(-100%)}}
+@media(prefers-reduced-motion:reduce){.loading-butterfly-filmstrip{animation:none}}

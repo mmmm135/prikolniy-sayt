@@ -1,10 +1,13 @@
 import * as THREE from 'three';
+import {createSceneFallback} from './scene-fallback';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 
 // Original meshes and animation clips are external assets; see /ASSET-CREDITS.md.
 export function createWildlife(options:{towardCenter?:boolean;modelUrl?:string}={}){
- const renderer=new THREE.WebGLRenderer({alpha:true,antialias:false});
+ let renderer:THREE.WebGLRenderer;
+ try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:false});}
+ catch(error){console.warn('Wildlife GPU scene unavailable',error);return createSceneFallback();}
  renderer.setClearColor(0x000000,0);renderer.setPixelRatio(1);
  const scene=new THREE.Scene(),camera=new THREE.OrthographicCamera(-1,1,1,-1,.1,3000);
  camera.position.set(0,0,1000);camera.lookAt(0,0,0);
@@ -21,7 +24,7 @@ export function createWildlife(options:{towardCenter?:boolean;modelUrl?:string}=
  const ready=Promise.all([
   loader.loadAsync(options.modelUrl||'/models/bird.glb').then(g=>{if(disposed)return;for(let i=0;i<(options.towardCenter?20:3);i++){const model=clone(g.scene);materialize(model);const group=normalize(model,120);group.rotation.y=-Math.PI/2;scene.add(group);birds.push(group);const mixer=new THREE.AnimationMixer(model);if(g.animations[0])mixer.clipAction(g.animations[0]).play();mixer.timeScale=options.towardCenter?.75+(i*7%11)*.075:1;mixer.setTime(i*.371);mixers.push(mixer);}}),
 
- ]);
+ ]).catch(error=>{if(!disposed)console.warn('Wildlife model unavailable',error);});
  const resize=(w:number,h:number)=>{width=w;height=h;renderer.setSize(Math.min(w,720),Math.round(h*Math.min(w,720)/w),false);camera.left=-w/2;camera.right=w/2;camera.top=h/2;camera.bottom=-h/2;camera.updateProjectionMatrix();};
  const draw=(p:number,t:number,target?:{x:number;y:number})=>{
   const delta=Math.min(.05,Math.max(0,t-last));last=t;mixers.forEach(m=>m.update(delta));
@@ -48,7 +51,7 @@ export function createWildlife(options:{towardCenter?:boolean;modelUrl?:string}=
   foxes.forEach(f=>{f.visible=p>.67;const entry=Math.min(1,Math.max(0,(p-.67)/.1));f.position.set(width*(width<700?-.3:-.35),height*-.285-height*(1-entry)*.12,2);f.scale.setScalar(Math.min(width/1350,height/900)*(1.02));});
   renderer.render(scene,camera);
  };
- const dispose=()=>{disposed=true;mixers.forEach(m=>m.stopAllAction());scene.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>m.dispose());}});renderer.dispose();};
+ const dispose=()=>{disposed=true;mixers.forEach(m=>m.stopAllAction());scene.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>m.dispose());}});renderer.dispose();renderer.forceContextLoss();};
  return{canvas:renderer.domElement,ready,resize,draw,dispose};
 }
 

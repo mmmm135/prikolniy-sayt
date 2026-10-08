@@ -47,3 +47,6 @@
 }
 @media(max-height:600px) and (min-width:701px){.contact-sheet{padding-top:50px}.contact-footer{margin-top:40px}.finale-natural .finale-scroll-space{height:60svh}}
 @media(prefers-reduced-motion:reduce){.finale-stage canvas{transition:none}.contact-action button,.contact-success button{transition:none}.contact-field-note,.contact-feedback p{animation:none}}
+
+.finale-stage{height:100dvh;margin-bottom:-100dvh}.contact-footer .footer-copyright{flex:none;text-align:right}
+@media(max-width:700px){.contact-footer{gap:12px}.contact-footer>span:not(.footer-copyright){font-size:7px}.contact-footer .footer-copyright{margin-left:auto}}
