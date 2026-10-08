@@ -61,10 +61,10 @@ export default function Home(){
  },[]);
  return <main>
   <LoadingScreen ready={ready||failed}/>
-  <section ref={stage} className={"scene-scroll"+(failed?" scene-unavailable":"")} aria-label="Графический пейзаж POUDEV">
+  <section ref={stage} className={"scene-scroll"+(failed?" scene-unavailable":"")} aria-label="POUDEV introductory artwork">
    <div className="scene"><canvas ref={canvas} className="night" aria-hidden="true"/><canvas ref={strokes} className="stroke-field" aria-hidden="true"/>{failed&&<div className="fallback"><strong>POUDEV</strong></div>}
     <div className="intro" lang="en"><h1>Your business deserves<br/>a better website.</h1><p>We design, write, and build custom websites.<br/>One studio, from the first idea to launch.</p></div>
-    <h2 className="sr-only">POUDEV — дизайн и разработка сайтов</h2>
+    <h2 className="sr-only">POUDEV — independent web design and development studio</h2>
    </div>
   </section>
   <Garden/>
