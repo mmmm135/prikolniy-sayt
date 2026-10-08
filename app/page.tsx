@@ -39,14 +39,14 @@ export default function Home(){
   const resize=()=>{const d=Math.min(devicePixelRatio,1.6),w=surface.clientWidth,h=surface.clientHeight;surface.width=Math.round(w*d);surface.height=Math.round(h*d);gl.viewport(0,0,surface.width,surface.height);gl.uniform2f(u.resolution,surface.width,surface.height);strokeScene.resize();wildlife.resize(w,h);};resize();
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,state={p:0};
 
-  const lenis=new Lenis({lerp:.09,smoothWheel:true});
+  const lenis=new Lenis({lerp:reduced?1:.075,smoothWheel:!reduced,syncTouch:!reduced,anchors:true});
   restoreWorkReturn(top=>lenis.scrollTo(top,{immediate:true,force:true}));
   lenis.on('scroll',ScrollTrigger.update);
   const anim=gsap.to(state,{p:.89,ease:'none',scrollTrigger:{trigger:stage.current,start:'top top',end:'bottom bottom',scrub:true}});
   let raf=0,mx=0,my=0,px=0,py=0;const started=performance.now();
   const pointer=(e:PointerEvent)=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5;};
   const draw=(timestamp:number)=>{
-   raf=requestAnimationFrame(draw);lenis.options.lerp=state.p>.66?1:.09;lenis.raf(timestamp);
+   raf=requestAnimationFrame(draw);lenis.raf(timestamp);
    const bounds=stage.current!.getBoundingClientRect();
    // A restored scroll position must not prevent the first ready frame.
    if((bounds.bottom<=0||bounds.top>=innerHeight)&&(!assetsReady||firstFrame))return;
