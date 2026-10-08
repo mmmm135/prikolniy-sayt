@@ -5,8 +5,8 @@ export const metadata: Metadata = {
   title: "POUDEV — Web Studio",
   description: "Independent web studio for thoughtful website design, content, and development.",
   icons: {
-    icon: "/favicon.svg?v=2",
-    shortcut: "/favicon.svg?v=2",
+    icon: "/favicon.svg?v=3",
+    shortcut: "/favicon.svg?v=3",
   },
 };
 
