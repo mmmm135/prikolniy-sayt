@@ -86,7 +86,7 @@ export function createContactMeadow(canvas:HTMLCanvasElement){
  let seed=3041;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
  const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
  const ready=Promise.all([
-  loader.loadAsync('/models/meadow/grass/optimized.glb'),loader.loadAsync('/models/meadow/orchid/optimized.glb'),
+  loader.loadAsync('/models/meadow/grass/optimized.glb'),loader.loadAsync('/models/meadow/orchid/orchid-print.glb'),
   loader.loadAsync('/models/meadow/butterfly-optimized.glb'),new THREE.TextureLoader().loadAsync('/models/meadow/grass/alpha.webp'),
  ]).then(([grass,orchid,butterfly,alpha])=>{
   alpha.flipY=false;alpha.colorSpace=THREE.NoColorSpace;textures.add(alpha);

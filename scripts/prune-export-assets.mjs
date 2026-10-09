@@ -12,7 +12,7 @@ const assets=new Set([
  'art/hero-desktop.webp','art/hero-mobile.webp','art/night-valley-render.webp','art/night-valley-sample.webp',
  'art/rose-print.webm','art/work-rock-sample.webp','art/studio-hand-sample.webp','art/work-herd-print.mp4','art/work-herd-poster.webp',
  'models/bird.glb','models/work-stork.glb','models/work-shrub/optimized.glb','models/work-shrub/textures/shrub_04_alpha_2k.webp',
- 'models/meadow/grass/optimized.glb','models/meadow/grass/alpha.webp','models/meadow/orchid/optimized.glb','models/meadow/butterfly-optimized.glb',
+ 'models/meadow/grass/optimized.glb','models/meadow/grass/alpha.webp','models/meadow/orchid/orchid-print.glb','models/meadow/butterfly-optimized.glb',
 ]);
 let retained=0,removed=0;
 const keepAsset=relative=>assets.has(relative)||/^fonts\/[^/]+\.woff2$/.test(relative)||/^concepts\/[^/]+\.(html|css|js|webp|svg)$/.test(relative)||/\.(md|txt)$/.test(relative);
